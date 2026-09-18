@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 const Mission = sequelize.define('Mission', {
-  id: {
+  idMission: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
@@ -11,6 +11,10 @@ const Mission = sequelize.define('Mission', {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true
+  },
+  responsableId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
   },
   titre: {
     type: DataTypes.STRING,

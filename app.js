@@ -8,16 +8,20 @@ const { sequelize, User } = require('./src/models');
 const userRoutes = require('./src/routes/userRoutes');
 const equipementRoutes = require('./src/routes/equipementRoutes');
 const missionRoutes = require('./src/routes/missionRoutes');
-
+const compteRenduRoutes = require('./src/routes/compteRenduRoutes');
+const incidentRoutes = require('./src/routes/incidentRoutes');
+const notificationRoutes = require('./src/routes/notificationRoutes');
+const presenceRoutes = require('./src/routes/presenceRoutes');
+const path = require('path');
 const app = express();
 
-// Middlewares de sécurité et d'analyse des requêtes
+// Middlewares de sécurité, de gestion des fichiers et d'analyse des requêtes
 app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // Enregistrement des routes
 app.get('/', (req, res) => {
   res.json({ message: 'API Manemek opérationnelle' });
@@ -27,8 +31,19 @@ app.use('/api', userRoutes);
 app.use('/api/missions', missionRoutes);
 // equipements routes
 app.use('/api/equipements', equipementRoutes);
+// compte rendu routes
+app.use('/api/compte-rendus', compteRenduRoutes);
+// incident routes
+app.use('/api/incidents', incidentRoutes);
+// notification routes
+app.use('/api/notifications',notificationRoutes);
+// presence routes
+app.use('/api/presence', presenceRoutes);
+// Gestion des erreurs pour les routes non trouvées 
 
-
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route non trouvée' });
+});
 
 // Connexion à la base de données et démarrage du serveur
 const PORT = process.env.PORT || 5000;
@@ -50,6 +65,7 @@ try {
         email: 'admin@manemek.com',
         password: defaultPassword,
         role: 'ADMIN',
+        actif: true,
         niveauAcces: 'SUPER_ADMIN'
       });
       console.log('👤 Compte Administrateur initial créé : admin@manemek.com / Admin123!');

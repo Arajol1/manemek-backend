@@ -1,60 +1,88 @@
+// src/models/User.js
+
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 const User = sequelize.define('User', {
-  id: {
+  idUtilisateur: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
+
   nom: {
     type: DataTypes.STRING,
     allowNull: false
   },
+
   prenom: {
     type: DataTypes.STRING,
     allowNull: false
   },
+
   email: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
-    validate: { isEmail: true }
+    validate: {
+      isEmail: true
+    }
   },
+
   password: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
   },
+
   avatarUri: {
     type: DataTypes.STRING,
     allowNull: true
   },
   role: {
-    type: DataTypes.ENUM('ADMIN', 'RESPONSABLE', 'COLLABORATEUR'),
+    type: DataTypes.ENUM(
+      'ADMIN',
+      'RESPONSABLE',
+      'COLLABORATEUR'
+    ),
     allowNull: false,
     defaultValue: 'COLLABORATEUR'
   },
+
   actif: {
     type: DataTypes.BOOLEAN,
-    defaultValue: true
+    defaultValue: false
   },
-  // Champs spécifiques selon le rôle (Héritage UML traduit en colonne unique par simplification)
+
+  codeActivation: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+
+  expirationCodeActivation: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+
   niveauAcces: {
     type: DataTypes.STRING,
-    allowNull: true // Pour Admin
+    allowNull: true
   },
+
   departement: {
     type: DataTypes.STRING,
-    allowNull: true // Pour Responsable
+    allowNull: true
   },
+
   poste: {
     type: DataTypes.STRING,
-    allowNull: true // Pour Collaborateur
+    allowNull: true
   },
+
   telephone: {
     type: DataTypes.STRING,
-    allowNull: true // Pour Collaborateur
+    allowNull: true
   }
+
 }, {
   timestamps: true
 });

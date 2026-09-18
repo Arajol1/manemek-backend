@@ -17,7 +17,7 @@ exports.createMission = async (req, res) => {
       statut: statut || 'PLANIFIEE',
       priorite: priorite || 'NORMALE',
       localisation,
-      responsableId: req.user.id,
+      responsableId: req.user.idUtilisateur,
     });
 
     res.status(201).json({
@@ -34,8 +34,12 @@ exports.getAllMissions = async (req, res) => {
   try {
     const missions = await Mission.findAll({
       include: [
-        { model: User, as: 'createur', attributes: ['id', 'nom', 'prenom', 'email'] },
-        { model: User, as: 'agents', attributes: ['id', 'nom', 'prenom', 'role'], through: { attributes: ['role', 'dateAffectation'] } },
+        { model: User, as: 'responsable', attributes: ['idUtilisateur', 'nom', 'prenom', 'email'] },
+        {
+          model: Affectation,
+          as: 'affectations',
+          include: [{ model: User, as: 'collaborateur', attributes: ['idUtilisateur', 'nom', 'prenom', 'role'] }]
+        },
       ],
     });
     res.json(missions);
@@ -49,7 +53,7 @@ exports.getMissionById = async (req, res) => {
   try {
     const mission = await Mission.findByPk(req.params.id, {
       include: [
-        { model: User, as: 'responsable', attributes: ['id', 'nom', 'prenom', 'email'] },
+        { model: User, as: 'responsable', attributes: ['idUtilisateur', 'nom', 'prenom', 'email'] },
         { 
           model: Affectation, 
           as: 'affectations',
@@ -57,7 +61,7 @@ exports.getMissionById = async (req, res) => {
             {
               model: User,
               as: 'collaborateur',
-              attributes: ['id', 'nom', 'prenom', 'role']
+              attributes: ['idUtilisateur', 'nom', 'prenom', 'role']
             }
           ]
         },
@@ -93,13 +97,27 @@ exports.affectUserToMission = async (req, res) => {
     const affectation = await Affectation.create({
       missionId,
       collaborateurId: userId,
-      role: role || 'MEMBRE',
+      fonction: role || 'MEMBRE',
     });
 
     res.status(201).json({
       message: 'Utilisateur affecté avec succès à la mission',
       affectation,
     });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};
+
+exports.deleteMission = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const mission = await Mission.findByPk(id);
+    if (!mission) {
+      return res.status(404).json({ message: 'Mission introuvable.' });
+    }
+    await mission.destroy();
+    res.json({ message: 'Mission supprimée avec succès.' });
   } catch (error) {
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }

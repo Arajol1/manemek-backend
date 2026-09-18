@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 const Affectation = sequelize.define('Affectation', {
-  id: {
+  idAffectation: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
@@ -10,6 +10,14 @@ const Affectation = sequelize.define('Affectation', {
   dateAffectation: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
+  },
+  collaborateurId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  missionId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
   },
   fonction: {
     type: DataTypes.STRING,

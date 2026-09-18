@@ -5,6 +5,7 @@ const QRCodeGenerator = require('qrcode');
 exports.createEquipement = async (req, res) => {
   try {
     const { nom, categorie, marque, modele, etat } = req.body;
+    let photoUri = null;
 
     const codeEquipement = `EQP-${Date.now()}`;
     const qrValue = `MANEMEK-EQP:${codeEquipement}`;
@@ -15,7 +16,9 @@ exports.createEquipement = async (req, res) => {
       type: 'EQUIPEMENT',
       actif: true
     });
-
+    if (req.file) {
+      photoUri = `/uploads/equipements/${req.file.filename}`;
+    }
     // Création de l'Équipement lié
     const equipement = await Equipement.create({
       codeEquipement,
@@ -25,7 +28,7 @@ exports.createEquipement = async (req, res) => {
       modele,
       etat: etat || 'BON',
       disponible: true,
-      photoEquipement: req.file ? req.file.path : null,
+      photoUri,
       idQRCode: newQRCode.idQRCode
     });
 

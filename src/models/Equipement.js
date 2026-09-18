@@ -30,8 +30,9 @@ const Equipement = sequelize.define('Equipement', {
   modele: {
     type: DataTypes.STRING
   },
-  photoEquipement: {
-    type: DataTypes.STRING
+  photoUri: {
+    type: DataTypes.STRING,
+    allowNull: true
   },
   etat: {
     type: DataTypes.ENUM('BON', 'USE', 'ENDOMMAGE', 'HORS_SERVICE'),
