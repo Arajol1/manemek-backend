@@ -47,6 +47,14 @@ User.hasMany(CompteRendu, {foreignKey: "idUtilisateur" });
 CompteRendu.belongsTo(Mission, { foreignKey: "idMission" });
 Mission.hasMany(CompteRendu, { foreignKey: "idMission" });
 
+// Relation 1 - N entre MouvementPresence et User
+MouvementPresence.belongsTo(User, { foreignKey: 'idUtilisateur', as: 'utilisateur' });
+User.hasMany(MouvementPresence, { foreignKey: 'idUtilisateur', as: 'presences' });
+
+// Relation 1 - N entre Incident et User
+Incident.belongsTo(User, { foreignKey: 'idUtilisateur', as: 'signaleur' });
+User.hasMany(Incident, { foreignKey: 'idUtilisateur', as: 'incidentsSignales' });
+
 module.exports = {
   sequelize,
   AnalyseIA,

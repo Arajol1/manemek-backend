@@ -72,3 +72,31 @@ exports.getEquipementByQR = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
+
+// 3. Récupérer tous les équipements (Utilisé par le Dashboard Admin)
+exports.getAllEquipements = async (req, res) => {
+  try {
+    const equipements = await Equipement.findAll({
+      order: [['createdAt', 'DESC']]
+    });
+    res.json(equipements);
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};
+
+// 4. Récupérer un équipement par son ID
+exports.getEquipementById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const equipement = await Equipement.findByPk(id);
+    
+    if (!equipement) {
+      return res.status(404).json({ message: 'Équipement introuvable.' });
+    }
+    
+    res.json(equipement);
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};

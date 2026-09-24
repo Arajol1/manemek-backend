@@ -57,8 +57,25 @@ exports.creerIncident = async (req, res) => {
 
 exports.getIncidents = async (req, res) => {
   try {
-    const incidents = await Incident.findAll({ order: [['dateSignalement', 'DESC']] });
+    const { User } = require('../models');
+    const incidents = await Incident.findAll({ 
+      include: [{ model: User, as: 'signaleur', attributes: ['idUtilisateur', 'nom', 'prenom', 'email'] }],
+      order: [['dateSignalement', 'DESC']] 
+    });
     res.json(incidents);
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};
+
+exports.getIncidentById = async (req, res) => {
+  try {
+    const { User } = require('../models');
+    const incident = await Incident.findByPk(req.params.id, {
+      include: [{ model: User, as: 'signaleur', attributes: ['idUtilisateur', 'nom', 'prenom', 'email'] }]
+    });
+    if (!incident) return res.status(404).json({ message: 'Incident non trouvé' });
+    res.json(incident);
   } catch (error) {
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }

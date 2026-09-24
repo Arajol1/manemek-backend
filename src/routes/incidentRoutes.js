@@ -13,6 +13,8 @@ router.post('/',upload.array('fichierJoint',3), incidentController.creerIncident
 
 // récupération de tous les incidents
 router.get('/', authorizeRole('ADMIN', 'RESPONSABLE'), incidentController.getIncidents);
+// récupération d'un incident
+router.get('/:id', authorizeRole('ADMIN', 'RESPONSABLE'), incidentController.getIncidentById);
 // mise à jour du statut d'un incident
 router.put('/:id/statutResolution', authorizeRole('ADMIN', 'RESPONSABLE'), incidentController.updateStatutIncident);
 module.exports = router;

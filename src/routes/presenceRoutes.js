@@ -10,6 +10,9 @@ router.use(authenticateToken);
 router.post('/scan', presenceController.enregistrerPointage);
 // Consultation de l'historique de présence (Accessible à tous les utilisateurs connectés)
 router.get('/history', authorizeRole('COLLABORATEUR'), presenceController.getMonHistorique);
+// Consultation de l'historique de présence de toute l'entreprise (Admin/Responsable)
+router.get('/all', authorizeRole('ADMIN', 'RESPONSABLE'), presenceController.getAllHistorique);
+
 // Consultation de l'historique de présence par utilisateur (Accessible uniquement aux administrateurs et responsables)
 router.get('/history/:idUtilisateur', authorizeRole('ADMIN','RESPONSABLE'), presenceController.getHistoriqueParUtilisateur);
 // creation d'un QR code de présence (Accessible uniquement aux administrateurs et  responsables)
