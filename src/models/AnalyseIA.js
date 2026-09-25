@@ -8,7 +8,7 @@ const AnalyseIA = sequelize.define('AnalyseIA', {
     defaultValue: DataTypes.UUIDV4
   },
   type: {
-    type: DataTypes.ENUM('MISSION', 'PERFORMANCE', 'PRESENCE', 'EQUIPEMENT', 'RECOMMANDATION'),
+    type: DataTypes.ENUM('PERFORMANCE', 'PRESENCES', 'MISSIONS', 'INCIDENTS', 'MATERIEL', 'COMPTES_RENDUS'),
     allowNull: false
   },
   contenu: {

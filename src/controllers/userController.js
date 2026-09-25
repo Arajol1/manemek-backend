@@ -14,8 +14,8 @@ const {
 
 exports.login = async (req, res) => {
   try {
-
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+    if (email) email = email.trim().toLowerCase();
 
     const user = await User.findOne({
       where: { email }
@@ -126,7 +126,7 @@ exports.getMe = async (req, res) => {
 exports.createUser = async (req, res) => {
   try {
 
-    const {
+    let {
       nom,
       prenom,
       email,
@@ -137,7 +137,14 @@ exports.createUser = async (req, res) => {
       niveauAcces
     } = req.body;
 
-    
+    if (email) email = email.trim().toLowerCase();
+
+    if (role === 'RESPONSABLE' && !departement) {
+      return res.status(400).json({
+        message: 'Le département est obligatoire pour un responsable.'
+      });
+    }
+
     const existingUser = await User.findOne({
       where: { email }
     });
@@ -229,11 +236,13 @@ exports.createUser = async (req, res) => {
 exports.activateAccount = async (req, res) => {
   try {
 
-    const {
+    let {
       email,
       code,
       password
     } = req.body;
+
+    if (email) email = email.trim().toLowerCase();
 
     if (!email || !code || !password) {
       return res.status(400).json({
@@ -326,7 +335,8 @@ exports.activateAccount = async (req, res) => {
 exports.resendActivationCode = async (req, res) => {
   try {
 
-    const { email } = req.body;
+    let { email } = req.body;
+    if (email) email = email.trim().toLowerCase();
 
     const user = await User.findOne({
       where: { email }
@@ -424,7 +434,7 @@ exports.updateUser = async (req, res) => {
 
     const { id } = req.params;
 
-    const {
+    let {
       nom,
       prenom,
       email,
@@ -436,6 +446,14 @@ exports.updateUser = async (req, res) => {
       niveauAcces,
       actif
     } = req.body;
+
+    if (email) email = email.trim().toLowerCase();
+
+    if (role === 'RESPONSABLE' && !departement) {
+      return res.status(400).json({
+        message: 'Le département est obligatoire pour un responsable.'
+      });
+    }
 
     const user = await User.findByPk(id);
 
@@ -543,7 +561,7 @@ exports.deleteUser = async (req, res) => {
 
 exports.updateMe = async (req, res) => {
   try {
-    const { email, telephone } = req.body;
+    const { email, telephone, nom, prenom, departement, poste } = req.body;
 
     const user = await User.findByPk(req.user.idUtilisateur);
 
@@ -572,9 +590,21 @@ exports.updateMe = async (req, res) => {
       updateData.email = email;
     }
 
-    // ─── MISE À JOUR DU TÉLÉPHONE ───
-    if (telephone && telephone !== user.telephone) {
+    // ─── MISE À JOUR DES AUTRES CHAMPS ───
+    if (telephone !== undefined && telephone !== user.telephone) {
       updateData.telephone = telephone;
+    }
+    if (nom !== undefined && nom !== user.nom) {
+      updateData.nom = nom;
+    }
+    if (prenom !== undefined && prenom !== user.prenom) {
+      updateData.prenom = prenom;
+    }
+    if (departement !== undefined && departement !== user.departement) {
+      updateData.departement = departement;
+    }
+    if (poste !== undefined && poste !== user.poste) {
+      updateData.poste = poste;
     }
 
     // ─── MISE À JOUR DE L'AVATAR ───
@@ -622,5 +652,33 @@ exports.updateMe = async (req, res) => {
       message: 'Erreur serveur',
       error: error.message,
     });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findByPk(req.user.idUtilisateur);
+
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable.' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'L\'ancien mot de passe est incorrect.' });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ message: 'Le mot de passe doit contenir au moins 8 caractères.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await user.update({ password: hashedPassword });
+
+    res.json({ message: 'Mot de passe mis à jour avec succès.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };

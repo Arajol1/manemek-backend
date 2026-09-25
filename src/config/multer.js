@@ -1,13 +1,15 @@
 const multer = require('multer');
 const path = require('path');
 
+const fs = require('fs');
+
 const storage = multer.diskStorage({
 
   destination: (req, file, cb) => {
 
     let folder = 'uploads/';
 
-    if (file.fieldname === 'photo') {
+    if (file.fieldname === 'photo' || file.fieldname === 'photoProfil') {
       folder += 'profiles/';
     }
 
@@ -21,6 +23,11 @@ const storage = multer.diskStorage({
 
     if (file.fieldname === 'document') {
       folder += 'missions/';
+    }
+
+    // S'assurer que le dossier existe
+    if (!fs.existsSync(folder)) {
+      fs.mkdirSync(folder, { recursive: true });
     }
 
     cb(null, folder);

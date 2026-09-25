@@ -25,11 +25,12 @@ exports.genererAnalyse = async (req, res) => {
 
 
     const typesAutorises = [
-      'MISSION',
       'PERFORMANCE',
-      'PRESENCE',
-      'EQUIPEMENT',
-      'RECOMMANDATION'
+      'PRESENCES',
+      'MISSIONS',
+      'INCIDENTS',
+      'MATERIEL',
+      'COMPTES_RENDUS'
     ];
 
 

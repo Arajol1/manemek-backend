@@ -37,3 +37,22 @@ exports.marquerCommeLue = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
+
+exports.toutMarquerCommeLue = async (req, res) => {
+  try {
+    const idUtilisateur = req.user.idUtilisateur;
+    const user = await User.findByPk(idUtilisateur);
+    
+    // Mark personal notifications as read
+    await Notification.update({ estLue: true }, { where: { idUtilisateur, estLue: false } });
+
+    // If admin/responsable, also mark global notifications as read
+    if(user && (user.role === 'ADMIN' || user.role === 'RESPONSABLE')){
+      await Notification.update({ estLue: true }, { where: { idUtilisateur: null, estLue: false } });
+    }
+
+    res.json({ message: 'Toutes les notifications ont été marquées comme lues.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};

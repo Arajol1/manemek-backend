@@ -77,7 +77,7 @@ exports.getEquipementByQR = async (req, res) => {
 exports.getAllEquipements = async (req, res) => {
   try {
     const equipements = await Equipement.findAll({
-      order: [['createdAt', 'DESC']]
+      order: [['codeEquipement', 'DESC']]
     });
     res.json(equipements);
   } catch (error) {

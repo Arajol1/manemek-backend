@@ -155,6 +155,7 @@ exports.getAllHistorique = async (req, res) => {
     res.json(historique);
   } catch (error) {
     console.error(error);
+    
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };

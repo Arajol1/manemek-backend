@@ -9,6 +9,9 @@ router.use(authenticateToken);
 // Récupération des notifications pour l'utilisateur connecté
 router.get('/', notificationController.MesNotifications );
 
+// Marquer toutes les notifications comme lues
+router.put('/tout-lire', notificationController.toutMarquerCommeLue);
+
 // Marquer une notification comme lue
 router.put('/:id/lire', notificationController.marquerCommeLue);
 

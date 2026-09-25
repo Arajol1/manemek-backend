@@ -19,7 +19,8 @@ router.post('/users',  authenticateToken, authorizeRole('ADMIN'), userController
 router.put('/users/:id', authenticateToken, authorizeRole('ADMIN'), userController.updateUser);
 router.delete('/users/:id', authenticateToken, authorizeRole('ADMIN'), userController.deleteUser);
 
-//updates pouvant être fait par l'utilisateur lui même ou par un admin
-router.put('/users/:id/update',upload.single('photo'), authenticateToken, authorizeRole('USER'), userController.updateMe);
+// updates pouvant être fait par l'utilisateur lui même
+router.put('/users/:id/update', upload.single('photoProfil'), authenticateToken, userController.updateMe);
+router.put('/auth/change-password', authenticateToken, userController.changePassword);
 
 module.exports = router;
