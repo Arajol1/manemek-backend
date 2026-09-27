@@ -1,4 +1,4 @@
-const { Mission, User, Affectation } = require('../models');
+const { Mission, User, Affectation, MouvementEquipement, CompteRendu, Incident } = require('../models');
 
 // 1. Créer une mission (Admin ou Responsable)
 exports.createMission = async (req, res) => {
@@ -116,6 +116,19 @@ exports.deleteMission = async (req, res) => {
     if (!mission) {
       return res.status(404).json({ message: 'Mission introuvable.' });
     }
+
+    // Supprimer les dépendances pour éviter les erreurs de clés étrangères
+    await Affectation.destroy({ where: { missionId: id } });
+    if (MouvementEquipement) {
+      await MouvementEquipement.destroy({ where: { idMission: id } });
+    }
+    if (CompteRendu) {
+      await CompteRendu.destroy({ where: { idMission: id } });
+    }
+    if (Incident) {
+      await Incident.destroy({ where: { idMission: id } });
+    }
+
     await mission.destroy();
     res.json({ message: 'Mission supprimée avec succès.' });
   } catch (error) {

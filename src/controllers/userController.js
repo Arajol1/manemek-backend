@@ -531,9 +531,7 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   try {
-
     const { id } = req.params;
-
     const user = await User.findByPk(id);
 
     if (!user) {
@@ -542,6 +540,24 @@ exports.deleteUser = async (req, res) => {
       });
     }
 
+    const { Mission, Affectation, Notification, MouvementEquipement, CompteRendu, MouvementPresence, Incident } = require('../models');
+
+    // Empêcher la suppression s'il est responsable de missions
+    const missions = await Mission.findAll({ where: { responsableId: id } });
+    if (missions.length > 0) {
+      return res.status(400).json({
+        message: 'Impossible de supprimer cet utilisateur car il est responsable d\'une ou plusieurs missions. Veuillez réassigner ces missions avant la suppression.'
+      });
+    }
+
+    // Supprimer toutes les dépendances pour éviter les erreurs de clés étrangères
+    await Affectation.destroy({ where: { collaborateurId: id } });
+    await Notification.destroy({ where: { idUtilisateur: id } });
+    await MouvementEquipement.destroy({ where: { idUtilisateur: id } });
+    await CompteRendu.destroy({ where: { idUtilisateur: id } });
+    await MouvementPresence.destroy({ where: { idUtilisateur: id } });
+    await Incident.destroy({ where: { idUtilisateur: id } });
+
     await user.destroy();
 
     res.json({
@@ -549,7 +565,6 @@ exports.deleteUser = async (req, res) => {
     });
 
   } catch (error) {
-
     res.status(500).json({
       message: 'Erreur serveur',
       error: error.message
