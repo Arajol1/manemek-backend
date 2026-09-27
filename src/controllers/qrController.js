@@ -1,6 +1,7 @@
 const QRCodeService = require('../services/QRCodeService');
 // Génération du QR code de présence du jour
 exports.getQRPresenceToday = async (req, res) => {
+  console.info(`[qrController.js] - getQRPresenceToday : en cours...`);
   try {
 
     const result = await QRCodeService.creerQRPresence();

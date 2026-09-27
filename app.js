@@ -17,7 +17,7 @@ const path = require('path');
 const app = express();
 
 // Middlewares de sécurité, de gestion des fichiers et d'analyse des requêtes
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());

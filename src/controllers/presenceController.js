@@ -2,6 +2,7 @@ const { calculerDistance } = require("../utils/geoUtils");
 const { MouvementPresence, QRCode } = require("../models");
 
 exports.enregistrerPointage = async (req, res) => {
+  console.info(`[presenceController.js] - enregistrerPointage : en cours...`);
   try {
     const { qrValue, latitude, longitude, wifiSsid, justification } = req.body;
 
@@ -110,6 +111,7 @@ exports.enregistrerPointage = async (req, res) => {
 };
 
 exports.getMonHistorique = async (req, res) => {
+  console.info(`[presenceController.js] - getMonHistorique : en cours...`);
   try {
     const idUtilisateur = req.user.idUtilisateur;
     const historique = await MouvementPresence.findAll({
@@ -126,6 +128,7 @@ exports.getMonHistorique = async (req, res) => {
 // Consultation de l'historique de présence par utilisateur (Accessible uniquement aux administrateurs et responsables)
 // futur amelioration : un responsable peut consulter l'historique de ses collaborateurs, mais pas celui des autres responsables.
 exports.getHistoriqueParUtilisateur = async (req, res) => {
+  console.info(`[presenceController.js] - getHistoriqueParUtilisateur : en cours...`);
   try {
     const { idUtilisateur } = req.params;
     const historique = await MouvementPresence.findAll({
@@ -140,6 +143,7 @@ exports.getHistoriqueParUtilisateur = async (req, res) => {
 };
 
 exports.getAllHistorique = async (req, res) => {
+  console.info(`[presenceController.js] - getAllHistorique : en cours...`);
   try {
     const { User } = require("../models");
     const historique = await MouvementPresence.findAll({

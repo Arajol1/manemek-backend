@@ -2,6 +2,7 @@ const analyseService = require('../services/AnalyseService');
 
 
 exports.genererAnalyse = async (req, res) => {
+  console.info(`[AnalyseController.js] - genererAnalyse : en cours...`);
 
   try {
 
@@ -85,6 +86,7 @@ exports.genererAnalyse = async (req, res) => {
 
 
 exports.getAnalyses = async (req, res) => {
+  console.info(`[AnalyseController.js] - getAnalyses : en cours...`);
 
   try {
 
@@ -107,6 +109,7 @@ exports.getAnalyses = async (req, res) => {
 
 
 exports.getAnalyseById = async (req, res) => {
+  console.info(`[AnalyseController.js] - getAnalyseById : en cours...`);
 
   try {
 

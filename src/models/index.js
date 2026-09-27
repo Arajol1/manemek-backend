@@ -55,6 +55,13 @@ User.hasMany(MouvementPresence, { foreignKey: 'idUtilisateur', as: 'presences' }
 Incident.belongsTo(User, { foreignKey: 'idUtilisateur', as: 'signaleur' });
 User.hasMany(Incident, { foreignKey: 'idUtilisateur', as: 'incidentsSignales' });
 
+// Relations supplémentaires pour Incident (avec Mission et Equipement)
+Incident.belongsTo(Mission, { foreignKey: 'idMission', as: 'mission' });
+Mission.hasMany(Incident, { foreignKey: 'idMission', as: 'incidents' });
+
+Incident.belongsTo(Equipement, { foreignKey: 'idEquipement', as: 'equipement' });
+Equipement.hasMany(Incident, { foreignKey: 'idEquipement', as: 'incidents' });
+
 module.exports = {
   sequelize,
   AnalyseIA,

@@ -2,6 +2,7 @@ const { Mission, User, Affectation, MouvementEquipement, CompteRendu, Incident }
 
 // 1. Créer une mission (Admin ou Responsable)
 exports.createMission = async (req, res) => {
+  console.info(`[missionController.js] - createMission : en cours...`);
   try {
     const { titre, description, dateDebut, dateFin, statut, priorite, localisation } = req.body;
 
@@ -31,6 +32,7 @@ exports.createMission = async (req, res) => {
 
 // 2. Récupérer toutes les missions
 exports.getAllMissions = async (req, res) => {
+  console.info(`[missionController.js] - getAllMissions : en cours...`);
   try {
     const missions = await Mission.findAll({
       include: [
@@ -50,6 +52,7 @@ exports.getAllMissions = async (req, res) => {
 
 // 3. Récupérer une mission par ID
 exports.getMissionById = async (req, res) => {
+  console.info(`[missionController.js] - getMissionById : en cours...`);
   try {
     const mission = await Mission.findByPk(req.params.id, {
       include: [
@@ -80,6 +83,7 @@ exports.getMissionById = async (req, res) => {
 
 // 4. Affecter un utilisateur à une mission
 exports.affectUserToMission = async (req, res) => {
+  console.info(`[missionController.js] - affectUserToMission : en cours...`);
   try {
     const { missionId } = req.params;
     const { userId, role } = req.body;
@@ -110,6 +114,7 @@ exports.affectUserToMission = async (req, res) => {
 };
 
 exports.deleteMission = async (req, res) => {
+  console.info(`[missionController.js] - deleteMission : en cours...`);
   try {
     const { id } = req.params;
     const mission = await Mission.findByPk(id);

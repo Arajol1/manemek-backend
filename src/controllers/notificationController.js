@@ -1,6 +1,7 @@
 const { Notification, User } = require('../models');
 
 exports.MesNotifications = async (req, res) => {
+  console.info(`[notificationController.js] - MesNotifications : en cours...`);
   try {
     const idUtilisateur = req.user.idUtilisateur;
     const user = await User.findByPk(idUtilisateur);
@@ -25,6 +26,7 @@ exports.MesNotifications = async (req, res) => {
 };
 
 exports.marquerCommeLue = async (req, res) => {
+  console.info(`[notificationController.js] - marquerCommeLue : en cours...`);
   try {
     const { id } = req.params;
     const notif = await Notification.findByPk(id);
@@ -39,6 +41,7 @@ exports.marquerCommeLue = async (req, res) => {
 };
 
 exports.toutMarquerCommeLue = async (req, res) => {
+  console.info(`[notificationController.js] - toutMarquerCommeLue : en cours...`);
   try {
     const idUtilisateur = req.user.idUtilisateur;
     const user = await User.findByPk(idUtilisateur);

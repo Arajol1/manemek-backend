@@ -1,6 +1,7 @@
 const { CompteRendu, Notification } = require('../models');
 
 exports.creerCompteRendu = async (req, res) => {
+  console.info(`[compteRenduController.js] - creerCompteRendu : en cours...`);
   try {
     const { contenu, idMission } = req.body;
     const idUtilisateur = req.user.idUtilisateur;
@@ -18,6 +19,7 @@ exports.creerCompteRendu = async (req, res) => {
 };
 
 exports.validerCompteRendu = async (req, res) => {
+  console.info(`[compteRenduController.js] - validerCompteRendu : en cours...`);
   try {
     const { id } = req.params;
     const cr = await CompteRendu.findByPk(id);
@@ -41,6 +43,7 @@ exports.validerCompteRendu = async (req, res) => {
 };
 
 exports.getCompteRendusByMission = async (req, res) => {
+  console.info(`[compteRenduController.js] - getCompteRendusByMission : en cours...`);
   try {
     const { idMission } = req.params;
     const liste = await CompteRendu.findAll({ where: { idMission } });

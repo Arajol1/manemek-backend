@@ -13,6 +13,7 @@ const {
 // connexion d'un utilisateur
 
 exports.login = async (req, res) => {
+  console.info(`[userController.js] - login : en cours...`);
   try {
     let { email, password } = req.body;
     if (email) email = email.trim().toLowerCase();
@@ -89,6 +90,7 @@ exports.login = async (req, res) => {
 
 
 exports.getMe = async (req, res) => {
+  console.info(`[userController.js] - getMe : en cours...`);
   try {
 
     const user = await User.findByPk(
@@ -124,6 +126,7 @@ exports.getMe = async (req, res) => {
 // cree un utilisateur(admin uniquement) et envoie le code d'activation par email
 
 exports.createUser = async (req, res) => {
+  console.info(`[userController.js] - createUser : en cours...`);
   try {
 
     let {
@@ -234,6 +237,7 @@ exports.createUser = async (req, res) => {
 // activation du compte utilisateur avec le code reçu par email et définition du mot de passe
 
 exports.activateAccount = async (req, res) => {
+  console.info(`[userController.js] - activateAccount : en cours...`);
   try {
 
     let {
@@ -333,6 +337,7 @@ exports.activateAccount = async (req, res) => {
 // renvoyer un nouveau code d'activation si l'utilisateur ne l'a pas reçu ou s'il a expiré
 
 exports.resendActivationCode = async (req, res) => {
+  console.info(`[userController.js] - resendActivationCode : en cours...`);
   try {
 
     let { email } = req.body;
@@ -401,6 +406,7 @@ exports.resendActivationCode = async (req, res) => {
 // obtenir la liste de tous les utilisateurs (admin uniquement)
 
 exports.getAllUsers = async (req, res) => {
+  console.info(`[userController.js] - getAllUsers : en cours...`);
   try {
 
     const users = await User.findAll({
@@ -430,6 +436,7 @@ exports.getAllUsers = async (req, res) => {
 //modifier les informations d'un utilisateur (admin uniquement)
 
 exports.updateUser = async (req, res) => {
+  console.info(`[userController.js] - updateUser : en cours...`);
   try {
 
     const { id } = req.params;
@@ -530,6 +537,7 @@ exports.updateUser = async (req, res) => {
 //supprimer un utilisateur (admin uniquement)
 
 exports.deleteUser = async (req, res) => {
+  console.info(`[userController.js] - deleteUser : en cours...`);
   try {
     const { id } = req.params;
     const user = await User.findByPk(id);
@@ -575,6 +583,7 @@ exports.deleteUser = async (req, res) => {
 // src/controllers/userController.js
 
 exports.updateMe = async (req, res) => {
+  console.info(`[userController.js] - updateMe : en cours...`);
   try {
     const { email, telephone, nom, prenom, departement, poste } = req.body;
 
@@ -626,7 +635,7 @@ exports.updateMe = async (req, res) => {
     if (req.file) {
       // supprimer l'ancien avatar local s'il existe
       if (user.avatarUri && user.avatarUri.startsWith('/uploads/')) {
-        const oldPath = path.join(__dirname, '..', user.avatarUri);
+        const oldPath = path.join(__dirname, '..', '..', user.avatarUri);
         if (fs.existsSync(oldPath)) {
           fs.unlinkSync(oldPath);
         }
@@ -636,8 +645,17 @@ exports.updateMe = async (req, res) => {
 
     // ─── AUCUNE MODIFICATION ───
     if (Object.keys(updateData).length === 0) {
-      return res.status(400).json({
+      return res.status(200).json({
         message: 'Aucune information à mettre à jour.',
+        user: {
+          idUtilisateur: user.idUtilisateur,
+          nom: user.nom,
+          prenom: user.prenom,
+          email: user.email,
+          role: user.role,
+          telephone: user.telephone,
+          avatarUri: user.avatarUri,
+        },
       });
     }
 
@@ -671,6 +689,7 @@ exports.updateMe = async (req, res) => {
 };
 
 exports.changePassword = async (req, res) => {
+  console.info(`[userController.js] - changePassword : en cours...`);
   try {
     const { currentPassword, newPassword } = req.body;
     const user = await User.findByPk(req.user.idUtilisateur);

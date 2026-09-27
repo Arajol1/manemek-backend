@@ -3,6 +3,7 @@ const QRCodeGenerator = require('qrcode');
 
 // 1. Créer un équipement et son QRCode lié (selon le diagramme)
 exports.createEquipement = async (req, res) => {
+  console.info(`[equipementController.js] - createEquipement : en cours...`);
   try {
     const { nom, categorie, marque, modele, etat } = req.body;
     let photoUri = null;
@@ -42,12 +43,17 @@ exports.createEquipement = async (req, res) => {
       qrImageBase64
     });
   } catch (error) {
+    if (req.file) {
+      const fs = require('fs');
+      if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    }
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
 
 // 2. Scanner / Récupérer par QR Code (Utilisé par scannerQRCode du Collaborateur)
 exports.getEquipementByQR = async (req, res) => {
+  console.info(`[equipementController.js] - getEquipementByQR : en cours...`);
   try {
     const { qrValue } = req.params;
 
@@ -75,6 +81,7 @@ exports.getEquipementByQR = async (req, res) => {
 
 // 3. Récupérer tous les équipements (Utilisé par le Dashboard Admin)
 exports.getAllEquipements = async (req, res) => {
+  console.info(`[equipementController.js] - getAllEquipements : en cours...`);
   try {
     const equipements = await Equipement.findAll({
       order: [['codeEquipement', 'DESC']]
@@ -87,6 +94,7 @@ exports.getAllEquipements = async (req, res) => {
 
 // 4. Récupérer un équipement par son ID
 exports.getEquipementById = async (req, res) => {
+  console.info(`[equipementController.js] - getEquipementById : en cours...`);
   try {
     const { id } = req.params;
     const equipement = await Equipement.findByPk(id);

@@ -1,6 +1,8 @@
+const fs = require('fs');
 const { Incident, Notification } = require('../models');
 
 exports.creerIncident = async (req, res) => {
+  console.info(`[incidentController.js] - creerIncident : en cours...`);
   try {
     const { sujet, categorie, niveauUrgence, details, idEquipement, idMission } = req.body;
     const idUtilisateur = req.user.idUtilisateur;
@@ -56,6 +58,7 @@ exports.creerIncident = async (req, res) => {
 };
 
 exports.getIncidents = async (req, res) => {
+  console.info(`[incidentController.js] - getIncidents : en cours...`);
   try {
     const { User } = require('../models');
     const incidents = await Incident.findAll({ 
@@ -69,6 +72,7 @@ exports.getIncidents = async (req, res) => {
 };
 
 exports.getIncidentById = async (req, res) => {
+  console.info(`[incidentController.js] - getIncidentById : en cours...`);
   try {
     const { User } = require('../models');
     const incident = await Incident.findByPk(req.params.id, {
@@ -82,6 +86,7 @@ exports.getIncidentById = async (req, res) => {
 };
 
 exports.updateStatutIncident = async (req, res) => {
+  console.info(`[incidentController.js] - updateStatutIncident : en cours...`);
   try {
     const { id } = req.params;
     const { statutResolution } = req.body; // 'EN_COURS' ou 'RESOLU'
