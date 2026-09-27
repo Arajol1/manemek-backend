@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "pm2":"pm2 start ecosystem.config.js --env production && pm2 save && systemctl reload nginx"
+
   },
   "keywords": [],
   "author": "",
