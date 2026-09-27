@@ -98,6 +98,18 @@ exports.affectUserToMission = async (req, res) => {
       return res.status(404).json({ message: 'Utilisateur introuvable.' });
     }
 
+    // Vérifier si l'utilisateur est déjà affecté à cette mission
+    const existingAffectation = await Affectation.findOne({
+      where: {
+        missionId,
+        collaborateurId: userId,
+      }
+    });
+
+    if (existingAffectation) {
+      return res.status(400).json({ message: 'Cet utilisateur est déjà affecté à cette mission.' });
+    }
+
     const affectation = await Affectation.create({
       missionId,
       collaborateurId: userId,

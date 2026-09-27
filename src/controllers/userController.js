@@ -470,6 +470,15 @@ exports.updateUser = async (req, res) => {
       });
     }
 
+    if (user.role === 'ADMIN' && parseInt(id) !== req.user.idUtilisateur) {
+      const requester = await User.findByPk(req.user.idUtilisateur);
+      if (!requester || requester.niveauAcces !== 'SUPER_ADMIN') {
+        return res.status(403).json({
+          message: 'Vous n\'avez pas l\'autorisation de modifier un autre compte administrateur.'
+        });
+      }
+    }
+
     if (email && email !== user.email) {
 
       const existingUser = await User.findOne({
@@ -540,12 +549,28 @@ exports.deleteUser = async (req, res) => {
   console.info(`[userController.js] - deleteUser : en cours...`);
   try {
     const { id } = req.params;
+
+    if (parseInt(id) === req.user.idUtilisateur) {
+      return res.status(403).json({
+        message: 'Vous ne pouvez pas supprimer votre propre compte.'
+      });
+    }
+
     const user = await User.findByPk(id);
 
     if (!user) {
       return res.status(404).json({
         message: 'Utilisateur introuvable.'
       });
+    }
+
+    if (user.role === 'ADMIN') {
+      const requester = await User.findByPk(req.user.idUtilisateur);
+      if (!requester || requester.niveauAcces !== 'SUPER_ADMIN') {
+        return res.status(403).json({
+          message: 'Vous n\'avez pas l\'autorisation de supprimer un autre compte administrateur.'
+        });
+      }
     }
 
     const { Mission, Affectation, Notification, MouvementEquipement, CompteRendu, MouvementPresence, Incident } = require('../models');
