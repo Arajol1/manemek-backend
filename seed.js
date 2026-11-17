@@ -15,6 +15,12 @@ async function seedDatabase() {
     }
 
     try {
+      await sequelize.query("ALTER TABLE `Equipements` ADD COLUMN `quantite` INTEGER DEFAULT 1;");
+    } catch (e) {
+      // Ignorer
+    }
+
+    try {
       await sequelize.query("ALTER TABLE `MouvementPresences` ADD COLUMN `idQRCode` VARCHAR(255);");
     } catch (e) {
       // Ignorer
@@ -280,27 +286,29 @@ async function seedDatabase() {
 
     // 5. Ajout d'équipements fictifs
     const mockEquipements = [
-      { code: 'EQ-00124', nom: 'Pro-Link Walkie Talkie V2', categorie: 'Communication', marque: 'Motorola', modele: 'DP4800', etat: 'BON' },
-      { code: 'EQ-00156', nom: 'Advanced Safety Helmet', categorie: 'Protection', marque: 'Petzl', modele: 'Vertex', etat: 'BON' },
-      { code: 'EQ-00189', nom: 'High-Visibility Safety Vest L', categorie: 'Protection', marque: 'Portwest', modele: 'HV-Pro', etat: 'BON' },
-      { code: 'EQ-00210', nom: 'Industrial Heavy Duty Flashlight', categorie: 'Éclairage', marque: 'Maglite', modele: 'ML300L', etat: 'BON' },
-      { code: 'EQ-00245', nom: 'Safety Harness - Pro Grade', categorie: 'Protection', marque: 'Camp', modele: 'Golden Top', etat: 'BON' }
+      { code: 'EQ-00124', nom: 'Pro-Link Walkie Talkie V2', categorie: 'Communication', marque: 'Motorola', modele: 'DP4800', etat: 'BON', quantite: 6 },
+      { code: 'EQ-00156', nom: 'Advanced Safety Helmet', categorie: 'Protection', marque: 'Petzl', modele: 'Vertex', etat: 'BON', quantite: 12 },
+      { code: 'EQ-00189', nom: 'High-Visibility Safety Vest L', categorie: 'Protection', marque: 'Portwest', modele: 'HV-Pro', etat: 'BON', quantite: 15 },
+      { code: 'EQ-00210', nom: 'Industrial Heavy Duty Flashlight', categorie: 'Éclairage', marque: 'Maglite', modele: 'ML300L', etat: 'BON', quantite: 4 },
+      { code: 'EQ-00245', nom: 'Safety Harness - Pro Grade', categorie: 'Protection', marque: 'Camp', modele: 'Golden Top', etat: 'BON', quantite: 1 }
     ];
 
     for (const eq of mockEquipements) {
-      const [equipement, created] = await Equipement.findOrCreate({
-        where: { codeEquipement: eq.code },
-        defaults: {
+      let equipement = await Equipement.findOne({ where: { codeEquipement: eq.code } });
+      if (!equipement) {
+        equipement = await Equipement.create({
+          codeEquipement: eq.code,
           nom: eq.nom,
           categorie: eq.categorie,
           marque: eq.marque,
           modele: eq.modele,
           etat: eq.etat,
+          quantite: eq.quantite,
           disponible: true
-        }
-      });
-      if (created) {
-        console.log(`📦 Équipement créé : ${equipement.nom} (${equipement.codeEquipement})`);
+        });
+        console.log(`📦 Équipement créé : ${equipement.nom} (${equipement.codeEquipement}, Qté: ${equipement.quantite})`);
+      } else {
+        await equipement.update({ quantite: eq.quantite, etat: eq.etat });
       }
     }
 

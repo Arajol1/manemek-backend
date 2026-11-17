@@ -60,6 +60,10 @@ try {
       await sequelize.query("ALTER TABLE `Users` ADD COLUMN `competences` JSON;");
     } catch (e) {}
 
+    try {
+      await sequelize.query("ALTER TABLE `Equipements` ADD COLUMN `quantite` INTEGER DEFAULT 1;");
+    } catch (e) {}
+
     await sequelize.sync();
 
     // Création automatique de l'Admin par défaut si aucun utilisateur n'existe

@@ -16,4 +16,10 @@ router.get('/:id', authorizeRole('ADMIN', 'RESPONSABLE'), equipementController.g
 // Création d'un équipement
 router.post('/', authorizeRole('ADMIN', 'RESPONSABLE'), upload.single('photoEquipement'), equipementController.createEquipement);
 
+// Mise à jour d'un équipement
+router.put('/:id', authorizeRole('ADMIN', 'RESPONSABLE'), upload.single('photoEquipement'), equipementController.updateEquipement);
+
+// Suppression (totale ou partielle avec quantité) d'un équipement
+router.delete('/:id', authorizeRole('ADMIN', 'RESPONSABLE'), equipementController.deleteEquipement);
+
 module.exports = router;

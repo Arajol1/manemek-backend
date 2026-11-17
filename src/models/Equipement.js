@@ -34,6 +34,11 @@ const Equipement = sequelize.define('Equipement', {
     type: DataTypes.ENUM('BON', 'USE', 'ENDOMMAGE', 'HORS_SERVICE'),
     defaultValue: 'BON'
   },
+  quantite: {
+    type: DataTypes.INTEGER,
+    defaultValue: 1,
+    allowNull: false
+  },
   disponible: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
