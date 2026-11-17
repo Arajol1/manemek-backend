@@ -56,6 +56,10 @@ try {
     await sequelize.authenticate();
     console.log('✅ Base de données SQLite connectée avec succès.');
 
+    try {
+      await sequelize.query("ALTER TABLE `Users` ADD COLUMN `competences` JSON;");
+    } catch (e) {}
+
     await sequelize.sync();
 
     // Création automatique de l'Admin par défaut si aucun utilisateur n'existe

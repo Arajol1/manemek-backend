@@ -81,6 +81,12 @@ const User = sequelize.define('User', {
   telephone: {
     type: DataTypes.STRING,
     allowNull: true
+  },
+
+  competences: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: []
   }
 
 }, {

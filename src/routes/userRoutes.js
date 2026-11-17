@@ -15,6 +15,7 @@ router.get('/auth/me', authenticateToken, userController.getMe); // Récupère l
 
 // Gestion Utilisateurs (Admin & Responsable)
 router.get('/users',authenticateToken, authorizeRole('ADMIN', 'RESPONSABLE'), userController.getAllUsers);
+router.get('/users/:id/activites', authenticateToken, userController.getUserActivities);
 // router.post('/users',userController.createUser);
 router.post('/users',  authenticateToken, authorizeRole('ADMIN'), userController.createUser);
 router.put('/users/:id', authenticateToken, authorizeRole('ADMIN'), userController.updateUser);

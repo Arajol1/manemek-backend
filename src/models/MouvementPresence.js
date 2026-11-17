@@ -13,7 +13,8 @@ const MouvementPresence = sequelize.define('MouvementPresence', {
   },
   idQRCode: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true,
+    defaultValue: 'MANUEL'
   },
   type: {
     type: DataTypes.ENUM('ENTREE', 'SORTIE'),

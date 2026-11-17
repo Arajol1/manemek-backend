@@ -163,3 +163,96 @@ exports.getAllHistorique = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
+
+// Enregistrer manuellement une présence ou absence pour un collaborateur
+exports.enregistrerPointageManuel = async (req, res) => {
+  console.info(`[presenceController.js] - enregistrerPointageManuel : en cours...`);
+  try {
+    const { idUtilisateur, type, justification } = req.body;
+
+    if (!idUtilisateur) {
+      return res.status(400).json({ message: "L'identifiant du collaborateur est requis." });
+    }
+
+    const { User } = require("../models");
+    const targetUser = await User.findByPk(idUtilisateur);
+    if (!targetUser) {
+      return res.status(404).json({ message: "Collaborateur introuvable." });
+    }
+
+    const pointageType = type === 'SORTIE' ? 'SORTIE' : 'ENTREE';
+    const justif = justification || (pointageType === 'ENTREE' 
+      ? `Présence signalée par ${req.user.prenom || ''} ${req.user.nom || ''}`.trim()
+      : `Absence signalée par ${req.user.prenom || ''} ${req.user.nom || ''}`.trim());
+
+    const pointage = await MouvementPresence.create({
+      idUtilisateur,
+      idQRCode: 'MANUEL',
+      type: pointageType,
+      justification: justif,
+      dateHeure: new Date(),
+    });
+
+    const { enregistrerActivite } = require('../services/auditService');
+    await enregistrerActivite({
+      idUtilisateur,
+      action: pointageType === 'ENTREE' ? 'PRESENCE_MANUELLE' : 'ABSENCE_MANUELLE',
+      description: pointageType === 'ENTREE' 
+        ? `Présence validée par ${req.user.prenom || ''} ${req.user.nom || ''}`.trim()
+        : `Absence signalée par ${req.user.prenom || ''} ${req.user.nom || ''}`.trim(),
+      typeEntite: 'PRESENCE',
+      idEntite: pointage.idMouvement,
+    });
+
+    res.status(201).json({
+      message: `Pointage ${pointageType === 'ENTREE' ? 'de présence' : "d'absence"} enregistré avec succès.`,
+      pointage,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
+// Récupérer le statut de présence du jour pour chaque collaborateur
+exports.getCollaborateursStatus = async (req, res) => {
+  try {
+    const { User } = require("../models");
+    const { Op } = require("sequelize");
+
+    const users = await User.findAll({
+      attributes: ['idUtilisateur', 'nom', 'prenom', 'email', 'avatarUri', 'poste', 'role', 'actif'],
+      order: [['nom', 'ASC']],
+    });
+
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const result = await Promise.all(
+      users.map(async (u) => {
+        const lastToday = await MouvementPresence.findOne({
+          where: {
+            idUtilisateur: u.idUtilisateur,
+            dateHeure: {
+              [Op.gte]: startOfDay,
+            },
+          },
+          order: [['dateHeure', 'DESC']],
+        });
+
+        const isPresentToday = lastToday ? lastToday.type === 'ENTREE' : false;
+
+        return {
+          ...u.toJSON(),
+          isPresentToday,
+          lastPointageToday: lastToday,
+        };
+      })
+    );
+
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};

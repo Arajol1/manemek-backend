@@ -10,6 +10,7 @@ const MouvementPresence = require('./MouvementPresence');
 const Incident = require('./Incident');
 const Notification = require('./Notification');
 const MouvementEquipement = require('./MouvementEquipement');
+const HistoriqueActivite = require('./HistoriqueActivite');
 
 // Un Responsable (User avec rôle RESPONSABLE) peut créer 0..* Missions
 User.hasMany(Mission, { foreignKey: 'responsableId', as: 'missionsCrees' });
@@ -58,6 +59,10 @@ Mission.hasMany(Incident, { foreignKey: 'idMission', as: 'incidents' });
 Incident.belongsTo(Equipement, { foreignKey: 'idEquipement', as: 'equipement' });
 Equipement.hasMany(Incident, { foreignKey: 'idEquipement', as: 'incidents' });
 
+// Relation 1 - N entre HistoriqueActivite et User
+HistoriqueActivite.belongsTo(User, { foreignKey: 'idUtilisateur', as: 'utilisateur' });
+User.hasMany(HistoriqueActivite, { foreignKey: 'idUtilisateur', as: 'activites' });
+
 module.exports = {
   sequelize,
   AnalyseIA,
@@ -70,5 +75,6 @@ module.exports = {
   Mission,
   Affectation,
   Equipement,
-  QRCode
+  QRCode,
+  HistoriqueActivite
 };

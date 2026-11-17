@@ -6,6 +6,11 @@ const { authorizeRole, authenticateToken } = require('../middlewares/auth');
 
 router.use(authenticateToken);
 
+// Enregistrement manuel d'une présence ou absence (Admin/Responsable)
+router.post('/manual', authorizeRole('ADMIN', 'RESPONSABLE'), presenceController.enregistrerPointageManuel);
+// Statut de présence du jour pour chaque collaborateur
+router.get('/status-collaborateurs', authorizeRole('ADMIN', 'RESPONSABLE'), presenceController.getCollaborateursStatus);
+
 // Enregistrement du pointage (Accessible à tous les utilisateurs connectés)
 router.post('/scan', presenceController.enregistrerPointage);
 // Consultation de l'historique de présence (Accessible à tous les utilisateurs connectés)

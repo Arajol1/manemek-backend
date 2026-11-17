@@ -451,6 +451,7 @@ exports.updateUser = async (req, res) => {
       telephone,
       departement,
       niveauAcces,
+      competences,
       actif
     } = req.body;
 
@@ -503,6 +504,10 @@ exports.updateUser = async (req, res) => {
       niveauAcces
     };
 
+    if (competences !== undefined) {
+      updateData.competences = competences;
+    }
+
     if (typeof actif === 'boolean') {
       updateData.actif = actif;
     }
@@ -514,6 +519,15 @@ exports.updateUser = async (req, res) => {
     }
 
     await user.update(updateData);
+
+    const { enregistrerActivite } = require('../services/auditService');
+    await enregistrerActivite({
+      idUtilisateur: user.idUtilisateur,
+      action: 'MODIFICATION_PROFIL',
+      description: `Profil et compétences mis à jour par ${req.user ? (req.user.prenom || '') + ' ' + (req.user.nom || '') : 'Admin'}`.trim(),
+      typeEntite: 'USER',
+      idEntite: user.idUtilisateur,
+    });
 
     res.json({
 
@@ -686,6 +700,15 @@ exports.updateMe = async (req, res) => {
 
     await user.update(updateData);
 
+    const { enregistrerActivite } = require('../services/auditService');
+    await enregistrerActivite({
+      idUtilisateur: user.idUtilisateur,
+      action: 'MODIFICATION_PROFIL',
+      description: `Profil et compétences mis à jour par ${req.user ? (req.user.prenom || '') + ' ' + (req.user.nom || '') : 'Admin'}`.trim(),
+      typeEntite: 'USER',
+      idEntite: user.idUtilisateur,
+    });
+
     res.json({
       message: 'Profil mis à jour avec succès.',
       user: {
@@ -738,6 +761,25 @@ exports.changePassword = async (req, res) => {
     res.json({ message: 'Mot de passe mis à jour avec succès.' });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};
+
+// Récupérer les 5 dernières activités d'un utilisateur (Audit)
+exports.getUserActivities = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { HistoriqueActivite } = require('../models');
+
+    const activites = await HistoriqueActivite.findAll({
+      where: { idUtilisateur: id },
+      order: [['createdAt', 'DESC']],
+      limit: 5,
+    });
+
+    res.json(activites);
+  } catch (error) {
+    console.error('Erreur getUserActivities:', error);
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };

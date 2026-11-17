@@ -1,11 +1,25 @@
 // seed.js - Création de 5 collaborateurs fictifs et affectation de missions
 const bcrypt = require('bcryptjs');
-const { sequelize, User, Mission, Affectation, Equipement, QRCode, MouvementPresence } = require('./src/models');
+const { sequelize, User, Mission, Affectation, Equipement, QRCode, MouvementPresence, HistoriqueActivite } = require('./src/models');
 
 async function seedDatabase() {
   try {
     console.log('🔄 Connexion à la base de données SQLite...');
     await sequelize.authenticate();
+    
+    // Ajout sécurisé des colonnes si inexistantes (évite les conflits SQLite alter)
+    try {
+      await sequelize.query("ALTER TABLE `Users` ADD COLUMN `competences` JSON;");
+    } catch (e) {
+      // Ignorer si la colonne existe déjà
+    }
+
+    try {
+      await sequelize.query("ALTER TABLE `MouvementPresences` ADD COLUMN `idQRCode` VARCHAR(255);");
+    } catch (e) {
+      // Ignorer
+    }
+
     await sequelize.sync();
     console.log('✅ Synchronisation de la base de données réussie.');
 
@@ -40,7 +54,14 @@ async function seedDatabase() {
         niveauAcces: 'Grade A+',
         departement: 'Logistique & Sécurité',
         poste: 'Senior Operations Security Agent',
-        telephone: '+33 6 12 34 56 78'
+        telephone: '+33 6 12 34 56 78',
+        competences: [
+          { name: 'Tactical Awareness', percentage: 95 },
+          { name: 'Crisis Management', percentage: 88 },
+          { name: 'Communication', percentage: 72 },
+          { name: 'First Aid Level 2', percentage: 100 },
+          { name: 'Inventory Software', percentage: 65 }
+        ]
       },
       {
         nom: 'Rodriguez',
@@ -52,7 +73,13 @@ async function seedDatabase() {
         niveauAcces: 'Grade A',
         departement: 'Sécurité',
         poste: 'Safety Specialist',
-        telephone: '+33 6 23 45 67 89'
+        telephone: '+33 6 23 45 67 89',
+        competences: [
+          { name: 'Safety Protocols', percentage: 92 },
+          { name: 'Team Coordination', percentage: 85 },
+          { name: 'Risk Assessment', percentage: 90 },
+          { name: 'Emergency Response', percentage: 80 }
+        ]
       },
       {
         nom: 'Chen',
@@ -64,7 +91,13 @@ async function seedDatabase() {
         niveauAcces: 'Grade B+',
         departement: 'Maintenance',
         poste: 'Technical Supervisor',
-        telephone: '+33 6 34 56 78 90'
+        telephone: '+33 6 34 56 78 90',
+        competences: [
+          { name: 'Equipment Diagnostics', percentage: 95 },
+          { name: 'Preventive Maintenance', percentage: 90 },
+          { name: 'Technical Support', percentage: 85 },
+          { name: 'Calibration', percentage: 78 }
+        ]
       },
       {
         nom: 'Valery',
@@ -76,7 +109,12 @@ async function seedDatabase() {
         niveauAcces: 'Grade B',
         departement: 'Administration',
         poste: 'HR Coordinator',
-        telephone: '+33 6 45 67 89 01'
+        telephone: '+33 6 45 67 89 01',
+        competences: [
+          { name: 'Human Resources', percentage: 88 },
+          { name: 'Compliance & Audits', percentage: 82 },
+          { name: 'Personnel Logistics', percentage: 75 }
+        ]
       },
       {
         nom: 'Dupont',
@@ -88,7 +126,12 @@ async function seedDatabase() {
         niveauAcces: 'Grade B',
         departement: 'Logistique',
         poste: 'Field Operator',
-        telephone: '+33 6 56 78 90 12'
+        telephone: '+33 6 56 78 90 12',
+        competences: [
+          { name: 'Field Operations', percentage: 90 },
+          { name: 'Perimeter Security', percentage: 85 },
+          { name: 'Surveillance Gear', percentage: 78 }
+        ]
       }
     ];
 
@@ -240,7 +283,7 @@ async function seedDatabase() {
       { code: 'EQ-00124', nom: 'Pro-Link Walkie Talkie V2', categorie: 'Communication', marque: 'Motorola', modele: 'DP4800', etat: 'BON' },
       { code: 'EQ-00156', nom: 'Advanced Safety Helmet', categorie: 'Protection', marque: 'Petzl', modele: 'Vertex', etat: 'BON' },
       { code: 'EQ-00189', nom: 'High-Visibility Safety Vest L', categorie: 'Protection', marque: 'Portwest', modele: 'HV-Pro', etat: 'BON' },
-      { code: 'EQ-00210', nom: 'Industrial Heavy Duty Flashlight', categorie: 'Éclairage', marque: 'Maglite', modele: 'ML300L', etat: 'USE' },
+      { code: 'EQ-00210', nom: 'Industrial Heavy Duty Flashlight', categorie: 'Éclairage', marque: 'Maglite', modele: 'ML300L', etat: 'BON' },
       { code: 'EQ-00245', nom: 'Safety Harness - Pro Grade', categorie: 'Protection', marque: 'Camp', modele: 'Golden Top', etat: 'BON' }
     ];
 
@@ -279,6 +322,54 @@ async function seedDatabase() {
         dateHeure: new Date(now.getTime() - 2 * 60 * 60 * 1000) // Il y a 2 heures
       }
     });
+
+    // 7. Seeding des 5 dernières activités (Audit) pour chaque collaborateur
+    const activitiesSeed = [
+      // Marcus
+      { idUtilisateur: marcus.idUtilisateur, action: 'POINTAGE_PRESENCE', description: 'Pointage enregistré : ENTREE au Poste Central', typeEntite: 'PRESENCE' },
+      { idUtilisateur: marcus.idUtilisateur, action: 'AFFECTATION_MISSION', description: 'Assigné à la mission MS-2026-001 (Chef d\'équipe sécurité)', typeEntite: 'MISSION' },
+      { idUtilisateur: marcus.idUtilisateur, action: 'MAJ_EQUIPEMENT', description: 'Attribution de la Radio VHF Motorola DP4801e', typeEntite: 'EQUIPEMENT' },
+      { idUtilisateur: marcus.idUtilisateur, action: 'FORMATION_SECURITE', description: 'Recyclage SST (Sauveteur Secouriste du Travail) validé', typeEntite: 'FORMATION' },
+      { idUtilisateur: marcus.idUtilisateur, action: 'SIGNALEMENT_INCIDENT', description: 'Rapport d\'incident : Alerte intrusion mineure secteur Ouest', typeEntite: 'INCIDENT' },
+
+      // Elena
+      { idUtilisateur: elena.idUtilisateur, action: 'CREATION_MISSION', description: 'Création et planification de la mission MS-2026-001', typeEntite: 'MISSION' },
+      { idUtilisateur: elena.idUtilisateur, action: 'POINTAGE_PRESENCE', description: 'Pointage enregistré : ENTREE', typeEntite: 'PRESENCE' },
+      { idUtilisateur: elena.idUtilisateur, action: 'AUDIT_SECURITE', description: 'Revue mensuelle des protocoles de sécurité validée', typeEntite: 'AUDIT' },
+      { idUtilisateur: elena.idUtilisateur, action: 'VALIDATION_COMPTERENDU', description: 'Validation du compte rendu de patrouille', typeEntite: 'COMPTERENDU' },
+      { idUtilisateur: elena.idUtilisateur, action: 'AFFECTATION_MISSION', description: 'Attribution d\'un membre à l\'équipe d\'intervention', typeEntite: 'MISSION' },
+
+      // David
+      { idUtilisateur: david.idUtilisateur, action: 'MAJ_EQUIPEMENT', description: 'Maintenance préventive des détecteurs multigaz effectuée', typeEntite: 'EQUIPEMENT' },
+      { idUtilisateur: david.idUtilisateur, action: 'POINTAGE_PRESENCE', description: 'Pointage enregistré : ENTREE', typeEntite: 'PRESENCE' },
+      { idUtilisateur: david.idUtilisateur, action: 'CREATION_MISSION', description: 'Planification logistique de transport de matériel', typeEntite: 'MISSION' },
+      { idUtilisateur: david.idUtilisateur, action: 'INVENTAIRE', description: 'Audit de conformité de l\'inventaire matériel achevé', typeEntite: 'EQUIPEMENT' },
+      { idUtilisateur: david.idUtilisateur, action: 'FORMATION_SECURITE', description: 'Habilitation électrique BR/BC renouvelée', typeEntite: 'FORMATION' },
+
+      // Sophie
+      { idUtilisateur: sophie.idUtilisateur, action: 'POINTAGE_PRESENCE', description: 'Pointage enregistré : ENTREE', typeEntite: 'PRESENCE' },
+      { idUtilisateur: sophie.idUtilisateur, action: 'MODIFICATION_PROFIL', description: 'Mise à jour des fiches compétences collaborateurs', typeEntite: 'USER' },
+      { idUtilisateur: sophie.idUtilisateur, action: 'RH_GESTION', description: 'Attestation de visite médicale périodique enregistrée', typeEntite: 'USER' },
+      { idUtilisateur: sophie.idUtilisateur, action: 'EXPORT_DONNEES', description: 'Génération du registre mensuel du personnel', typeEntite: 'AUDIT' },
+      { idUtilisateur: sophie.idUtilisateur, action: 'POINTAGE_PRESENCE', description: 'Pointage de sortie validé', typeEntite: 'PRESENCE' },
+
+      // Julien
+      { idUtilisateur: julien.idUtilisateur, action: 'POINTAGE_PRESENCE', description: 'Pointage enregistré : ENTREE sur site', typeEntite: 'PRESENCE' },
+      { idUtilisateur: julien.idUtilisateur, action: 'AFFECTATION_MISSION', description: 'Affecté en tant qu\'Opérateur sur la mission MS-2026-001', typeEntite: 'MISSION' },
+      { idUtilisateur: julien.idUtilisateur, action: 'MAJ_EQUIPEMENT', description: 'Prise en charge du Casque de sécurité Vertex Petzl', typeEntite: 'EQUIPEMENT' },
+      { idUtilisateur: julien.idUtilisateur, action: 'COMPTERENDU_SOUMIS', description: 'Compte-rendu de ronde de surveillance déposé', typeEntite: 'COMPTERENDU' },
+      { idUtilisateur: julien.idUtilisateur, action: 'SIGNALEMENT_INCIDENT', description: 'Signalement d\'un défaut d\'éclairage sur la zone parking B', typeEntite: 'INCIDENT' },
+    ];
+
+    for (const act of activitiesSeed) {
+      await HistoriqueActivite.create({
+        idUtilisateur: act.idUtilisateur,
+        action: act.action,
+        description: act.description,
+        typeEntite: act.typeEntite,
+        createdAt: new Date(Date.now() - Math.floor(Math.random() * 86400000 * 3)),
+      });
+    }
 
     console.log('\n🎉 Opération terminée avec succès !');
     console.log('   - 5 Collaborateurs avec rôles variés (ADMIN, RESPONSABLE, COLLABORATEUR)');
