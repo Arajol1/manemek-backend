@@ -25,10 +25,6 @@ Affectation.belongsTo(User, { foreignKey: 'collaborateurId', as: 'collaborateur'
 Mission.hasMany(Affectation, { foreignKey: 'missionId', as: 'affectations' });
 Affectation.belongsTo(Mission, { foreignKey: 'missionId', as: 'mission' });
 
-// Relation 1-1 entre Equipement et QRCode
-QRCode.hasOne(Equipement, { foreignKey: 'idQRCode', as: 'equipement' });
-Equipement.belongsTo(QRCode, { foreignKey: 'idQRCode', as: 'qrCode' });
-
 // Relations MouvementEquipement
 Equipement.hasMany(MouvementEquipement, { foreignKey: 'idEquipement' });
 MouvementEquipement.belongsTo(Equipement, { foreignKey: 'idEquipement' });

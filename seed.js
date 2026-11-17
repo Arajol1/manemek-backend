@@ -240,19 +240,11 @@ async function seedDatabase() {
       { code: 'EQ-00124', nom: 'Pro-Link Walkie Talkie V2', categorie: 'Communication', marque: 'Motorola', modele: 'DP4800', etat: 'BON' },
       { code: 'EQ-00156', nom: 'Advanced Safety Helmet', categorie: 'Protection', marque: 'Petzl', modele: 'Vertex', etat: 'BON' },
       { code: 'EQ-00189', nom: 'High-Visibility Safety Vest L', categorie: 'Protection', marque: 'Portwest', modele: 'HV-Pro', etat: 'BON' },
-      { code: 'EQ-00210', nom: 'Industrial Heavy Duty Flashlight', categorie: 'Éclairage', marque: 'Maglite', modele: 'ML300L', etat: 'MOYEN' },
+      { code: 'EQ-00210', nom: 'Industrial Heavy Duty Flashlight', categorie: 'Éclairage', marque: 'Maglite', modele: 'ML300L', etat: 'USE' },
       { code: 'EQ-00245', nom: 'Safety Harness - Pro Grade', categorie: 'Protection', marque: 'Camp', modele: 'Golden Top', etat: 'BON' }
     ];
 
     for (const eq of mockEquipements) {
-      let qr = await QRCode.findOne({ where: { valeur: `MANEMEK-EQP:${eq.code}` } });
-      if (!qr) {
-        qr = await QRCode.create({
-          valeur: `MANEMEK-EQP:${eq.code}`,
-          type: 'EQUIPEMENT',
-          actif: true
-        });
-      }
       const [equipement, created] = await Equipement.findOrCreate({
         where: { codeEquipement: eq.code },
         defaults: {
@@ -261,8 +253,7 @@ async function seedDatabase() {
           marque: eq.marque,
           modele: eq.modele,
           etat: eq.etat,
-          disponible: true,
-          idQRCode: qr.idQRCode
+          disponible: true
         }
       });
       if (created) {

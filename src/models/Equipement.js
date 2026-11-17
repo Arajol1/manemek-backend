@@ -12,10 +12,6 @@ const Equipement = sequelize.define('Equipement', {
     allowNull: false,
     unique: true
   },
-  idQRCode: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
   nom: {
     type: DataTypes.STRING,
     allowNull: false
