@@ -19,6 +19,9 @@ router.post('/', authorizeRole('ADMIN', 'RESPONSABLE'), upload.single('photoEqui
 // Mise à jour d'un équipement
 router.put('/:id', authorizeRole('ADMIN', 'RESPONSABLE'), upload.single('photoEquipement'), equipementController.updateEquipement);
 
+// Reclasser / dégrader une quantité d'équipements vers un autre état
+router.post('/:id/reclasser', authorizeRole('ADMIN', 'RESPONSABLE'), equipementController.reclasserEquipement);
+
 // Suppression (totale ou partielle avec quantité) d'un équipement
 router.delete('/:id', authorizeRole('ADMIN', 'RESPONSABLE'), equipementController.deleteEquipement);
 

@@ -181,3 +181,108 @@ exports.deleteEquipement = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
+
+// 7. Dégrader / Reclasser une quantité d'équipements vers un autre état
+exports.reclasserEquipement = async (req, res) => {
+  console.info(`[equipementController.js] - reclasserEquipement : en cours...`);
+  try {
+    const { id } = req.params;
+    const { nouvelEtat } = req.body;
+    const quantiteAReclasser = parseInt(req.body.quantite, 10);
+
+    const etatsValides = ['BON', 'USE', 'ENDOMMAGE', 'HORS_SERVICE'];
+    if (!etatsValides.includes(nouvelEtat)) {
+      return res.status(400).json({ message: `État invalide. Valeurs permises: ${etatsValides.join(', ')}` });
+    }
+
+    const equipement = await Equipement.findByPk(id);
+    if (!equipement) {
+      return res.status(404).json({ message: 'Équipement source introuvable.' });
+    }
+
+    if (equipement.etat === nouvelEtat) {
+      return res.status(400).json({ message: `L'équipement est déjà à l'état ${nouvelEtat}.` });
+    }
+
+    if (!quantiteAReclasser || quantiteAReclasser <= 0 || quantiteAReclasser > equipement.quantite) {
+      return res.status(400).json({ message: `Quantité invalide (doit être entre 1 et ${equipement.quantite}).` });
+    }
+
+    const { enregistrerActivite } = require('../services/auditService');
+    const etatPrecedent = equipement.etat;
+
+    // Rechercher s'il existe déjà un lot pour cet équipement (même nom, marque, catégorie) ayant déjà le nouvelEtat
+    let lotCible = await Equipement.findOne({
+      where: {
+        nom: equipement.nom,
+        categorie: equipement.categorie,
+        etat: nouvelEtat,
+      }
+    });
+
+    if (quantiteAReclasser === equipement.quantite) {
+      // Tout le lot change d'état
+      if (lotCible && lotCible.idEquipement !== equipement.idEquipement) {
+        // Fusionner avec le lot cible existant
+        await lotCible.update({ quantite: lotCible.quantite + quantiteAReclasser });
+        
+        // Dissocier les relations avant suppression
+        const { MouvementEquipement, Incident } = require('../models');
+        try {
+          await MouvementEquipement.destroy({ where: { idEquipement: equipement.idEquipement } });
+          await Incident.update({ idEquipement: null }, { where: { idEquipement: equipement.idEquipement } });
+        } catch (e) {
+          console.warn(e);
+        }
+        await equipement.destroy();
+      } else {
+        // Mettre simplement à jour l'état de ce lot
+        await equipement.update({ 
+          etat: nouvelEtat,
+          disponible: nouvelEtat !== 'HORS_SERVICE'
+        });
+        lotCible = equipement;
+      }
+    } else {
+      // Reclassification partielle
+      const resteSource = equipement.quantite - quantiteAReclasser;
+      await equipement.update({ quantite: resteSource });
+
+      if (lotCible) {
+        // Incrémenter le lot cible existant
+        await lotCible.update({ quantite: lotCible.quantite + quantiteAReclasser });
+      } else {
+        // Créer un nouveau lot pour le nouvel état
+        const nouveauCode = `EQP-${Date.now()}`;
+        lotCible = await Equipement.create({
+          codeEquipement: nouveauCode,
+          nom: equipement.nom,
+          categorie: equipement.categorie,
+          marque: equipement.marque,
+          modele: equipement.modele,
+          photoUri: equipement.photoUri,
+          etat: nouvelEtat,
+          quantite: quantiteAReclasser,
+          disponible: nouvelEtat !== 'HORS_SERVICE'
+        });
+      }
+    }
+
+    await enregistrerActivite({
+      idUtilisateur: req.user ? req.user.idUtilisateur : 1,
+      action: 'RECLASSIFICATION_EQUIPEMENT',
+      description: `Reclassification de ${quantiteAReclasser} unité(s) de ${equipement.nom} de ${etatPrecedent} vers ${nouvelEtat}`,
+      typeEntite: 'EQUIPEMENT',
+      idEntite: equipement.idEquipement,
+    });
+
+    res.json({
+      message: `Reclassification réussie : ${quantiteAReclasser} unité(s) passée(s) à l'état ${nouvelEtat}.`,
+      lotSource: equipement,
+      lotCible
+    });
+  } catch (error) {
+    console.error('Erreur reclassification:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};

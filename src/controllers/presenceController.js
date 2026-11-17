@@ -151,7 +151,7 @@ exports.getAllHistorique = async (req, res) => {
         {
           model: User,
           as: "utilisateur",
-          attributes: ["idUtilisateur", "nom", "prenom", "email"],
+          attributes: ["idUtilisateur", "nom", "prenom", "email", "avatarUri", "role", "poste"],
         },
       ],
       order: [["dateHeure", "DESC"]],
