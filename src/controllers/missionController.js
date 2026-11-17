@@ -36,11 +36,11 @@ exports.getAllMissions = async (req, res) => {
   try {
     const missions = await Mission.findAll({
       include: [
-        { model: User, as: 'responsable', attributes: ['idUtilisateur', 'nom', 'prenom', 'email'] },
+        { model: User, as: 'responsable', attributes: ['idUtilisateur', 'nom', 'prenom', 'email', 'avatarUri'] },
         {
           model: Affectation,
           as: 'affectations',
-          include: [{ model: User, as: 'collaborateur', attributes: ['idUtilisateur', 'nom', 'prenom', 'role'] }]
+          include: [{ model: User, as: 'collaborateur', attributes: ['idUtilisateur', 'nom', 'prenom', 'role', 'avatarUri'] }]
         },
       ],
     });
@@ -56,7 +56,7 @@ exports.getMissionById = async (req, res) => {
   try {
     const mission = await Mission.findByPk(req.params.id, {
       include: [
-        { model: User, as: 'responsable', attributes: ['idUtilisateur', 'nom', 'prenom', 'email'] },
+        { model: User, as: 'responsable', attributes: ['idUtilisateur', 'nom', 'prenom', 'email', 'avatarUri'] },
         { 
           model: Affectation, 
           as: 'affectations',
@@ -64,7 +64,7 @@ exports.getMissionById = async (req, res) => {
             {
               model: User,
               as: 'collaborateur',
-              attributes: ['idUtilisateur', 'nom', 'prenom', 'role']
+              attributes: ['idUtilisateur', 'nom', 'prenom', 'role', 'avatarUri']
             }
           ]
         },
@@ -120,6 +120,28 @@ exports.affectUserToMission = async (req, res) => {
       message: 'Utilisateur affecté avec succès à la mission',
       affectation,
     });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};
+
+// 4.1 Retirer un utilisateur d'une mission
+exports.removeUserFromMission = async (req, res) => {
+  console.info(`[missionController.js] - removeUserFromMission : en cours...`);
+  try {
+    const { missionId, collaborateurId } = req.params;
+    const deleted = await Affectation.destroy({
+      where: {
+        missionId,
+        collaborateurId,
+      },
+    });
+
+    if (!deleted) {
+      return res.status(404).json({ message: 'Affectation introuvable pour ce collaborateur.' });
+    }
+
+    res.json({ message: 'Collaborateur retiré de la mission avec succès.' });
   } catch (error) {
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
