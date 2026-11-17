@@ -27,8 +27,8 @@ Mission.hasMany(Affectation, { foreignKey: 'missionId', as: 'affectations' });
 Affectation.belongsTo(Mission, { foreignKey: 'missionId', as: 'mission' });
 
 // Relations MouvementEquipement
-Equipement.hasMany(MouvementEquipement, { foreignKey: 'idEquipement' });
-MouvementEquipement.belongsTo(Equipement, { foreignKey: 'idEquipement' });
+Equipement.hasMany(MouvementEquipement, { foreignKey: 'idEquipement', onDelete: 'CASCADE' });
+MouvementEquipement.belongsTo(Equipement, { foreignKey: 'idEquipement', onDelete: 'CASCADE' });
 
 User.hasMany(MouvementEquipement, { foreignKey: 'idUtilisateur' });
 MouvementEquipement.belongsTo(User, { foreignKey: 'idUtilisateur' });
@@ -56,8 +56,8 @@ User.hasMany(Incident, { foreignKey: 'idUtilisateur', as: 'incidentsSignales' })
 Incident.belongsTo(Mission, { foreignKey: 'idMission', as: 'mission' });
 Mission.hasMany(Incident, { foreignKey: 'idMission', as: 'incidents' });
 
-Incident.belongsTo(Equipement, { foreignKey: 'idEquipement', as: 'equipement' });
-Equipement.hasMany(Incident, { foreignKey: 'idEquipement', as: 'incidents' });
+Incident.belongsTo(Equipement, { foreignKey: 'idEquipement', as: 'equipement', onDelete: 'SET NULL' });
+Equipement.hasMany(Incident, { foreignKey: 'idEquipement', as: 'incidents', onDelete: 'SET NULL' });
 
 // Relation 1 - N entre HistoriqueActivite et User
 HistoriqueActivite.belongsTo(User, { foreignKey: 'idUtilisateur', as: 'utilisateur' });

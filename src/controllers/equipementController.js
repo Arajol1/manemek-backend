@@ -153,6 +153,16 @@ exports.deleteEquipement = async (req, res) => {
     // Sinon, suppression complète
     const nom = equipement.nom;
     const code = equipement.codeEquipement;
+
+    // Dissocier les enregistrements liés pour éviter les erreurs de clés étrangères
+    const { MouvementEquipement, Incident } = require('../models');
+    try {
+      await MouvementEquipement.destroy({ where: { idEquipement: id } });
+      await Incident.update({ idEquipement: null }, { where: { idEquipement: id } });
+    } catch (e) {
+      console.warn("Nettoyage des relations avant suppression :", e.message);
+    }
+
     await equipement.destroy();
 
     await enregistrerActivite({
