@@ -15,6 +15,6 @@ router.post('/', authorizeRole('ADMIN'), missionController.createMission);
 router.post('/:missionId/affect', authorizeRole('ADMIN', 'RESPONSABLE'), missionController.affectUserToMission);
 router.delete('/:missionId/affect/:collaborateurId', authorizeRole('ADMIN', 'RESPONSABLE'), missionController.removeUserFromMission);
 
-// suppression d'une mission (Admin uniquement)
-router.delete('/:id', authorizeRole('ADMIN'), missionController.deleteMission);
+// suppression d'une mission (Admin et Responsable)
+router.delete('/:id', authorizeRole('ADMIN', 'RESPONSABLE'), missionController.deleteMission);
 module.exports = router;

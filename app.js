@@ -61,6 +61,10 @@ try {
     } catch (e) {}
 
     try {
+      await sequelize.query("ALTER TABLE `Users` ADD COLUMN `fcmToken` VARCHAR(255);");
+    } catch (e) {}
+
+    try {
       await sequelize.query("ALTER TABLE `Equipements` ADD COLUMN `quantite` INTEGER DEFAULT 1;");
     } catch (e) {}
 

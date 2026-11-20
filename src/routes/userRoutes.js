@@ -17,9 +17,9 @@ router.get('/auth/me', authenticateToken, userController.getMe); // Récupère l
 router.get('/users',authenticateToken, authorizeRole('ADMIN', 'RESPONSABLE'), userController.getAllUsers);
 router.get('/users/:id/activites', authenticateToken, userController.getUserActivities);
 // router.post('/users',userController.createUser);
-router.post('/users',  authenticateToken, authorizeRole('ADMIN'), userController.createUser);
-router.put('/users/:id', authenticateToken, authorizeRole('ADMIN'), userController.updateUser);
-router.delete('/users/:id', authenticateToken, authorizeRole('ADMIN'), userController.deleteUser);
+router.post('/users',  authenticateToken, authorizeRole('ADMIN', 'RESPONSABLE'), userController.createUser);
+router.put('/users/:id', authenticateToken, authorizeRole('ADMIN', 'RESPONSABLE'), userController.updateUser);
+router.delete('/users/:id', authenticateToken, authorizeRole('ADMIN', 'RESPONSABLE'), userController.deleteUser);
 
 // updates pouvant être fait par l'utilisateur lui même
 router.put('/users/:id/update', upload.single('photoProfil'), authenticateToken, userController.updateMe);

@@ -10,6 +10,9 @@ router.use(authenticateToken);
 // Récupération de tous les équipements (Dashboard web)
 router.get('/', authorizeRole('ADMIN', 'RESPONSABLE'), equipementController.getAllEquipements);
 
+// Récupération des catégories d'équipements prédéfinies
+router.get('/categories', authorizeRole('ADMIN', 'RESPONSABLE'), equipementController.getCategories);
+
 // Récupération d'un équipement par son ID
 router.get('/:id', authorizeRole('ADMIN', 'RESPONSABLE'), equipementController.getEquipementById);
 

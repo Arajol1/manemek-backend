@@ -59,3 +59,20 @@ exports.toutMarquerCommeLue = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
+
+exports.enregistrerFcmToken = async (req, res) => {
+  console.info(`[notificationController.js] - enregistrerFcmToken : en cours...`);
+  try {
+    const { fcmToken } = req.body;
+    if (!fcmToken) {
+      return res.status(400).json({ message: 'Token FCM requis.' });
+    }
+    await User.update(
+      { fcmToken },
+      { where: { idUtilisateur: req.user.idUtilisateur } }
+    );
+    res.json({ message: 'Token FCM enregistré avec succès.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};

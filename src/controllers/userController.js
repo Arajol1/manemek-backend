@@ -45,9 +45,18 @@ exports.login = async (req, res) => {
       });
     }
 
+    // Bloquer les collaborateurs sur la plateforme web
+    if (req.body.platform === 'web' && user.role === 'COLLABORATEUR') {
+      return res.status(403).json({
+        message: "Accès refusé. La plateforme web est exclusivement réservée aux administrateurs et responsables. Veuillez utiliser l'application mobile."
+      });
+    }
+
     const token = jwt.sign(
       {
         idUtilisateur: user.idUtilisateur,
+        nom: user.nom,
+        prenom: user.prenom,
         email: user.email,
         role: user.role
       },
@@ -185,32 +194,40 @@ exports.createUser = async (req, res) => {
       expirationCodeActivation
     });
 
+    let emailSent = false;
     try {
-
-      await envoyerCodeActivation(
-        newUser,
-        codeActivation
-      );
-
+      if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+        await envoyerCodeActivation(
+          newUser,
+          codeActivation
+        );
+        emailSent = true;
+      } else {
+        console.warn(`[createUser] SMTP non configuré dans .env. Code d'activation pour ${newUser.email} : ${codeActivation}`);
+      }
     } catch (emailError) {
+      console.warn(`[createUser] Impossible d'envoyer l'email d'activation (${emailError.message}). Code : ${codeActivation}`);
+    }
 
-      await newUser.destroy();
-
-      console.error(
-        'Erreur envoi email :',
-        emailError
-      );
-
-      return res.status(500).json({
-        message: 'Utilisateur non créé : impossible d’envoyer l’email.'
+    try {
+      const { enregistrerActivite } = require('../services/auditService');
+      const auteur = (req.user && (`${req.user.prenom || ''} ${req.user.nom || ''}`.trim() || req.user.email)) || 'Administrateur';
+      await enregistrerActivite({
+        idUtilisateur: newUser.idUtilisateur,
+        action: 'CREATION_COMPTE',
+        description: `Compte créé par ${auteur}`,
+        typeEntite: 'USER',
+        idEntite: newUser.idUtilisateur,
       });
+    } catch (e) {
+      console.warn('Erreur log audit creation user', e);
     }
 
     res.status(201).json({
-
-      message:
-        'Utilisateur créé. Le code d’activation a été envoyé par email.',
-
+      message: emailSent
+        ? 'Utilisateur créé. Le code d’activation a été envoyé par email.'
+        : `Utilisateur créé avec succès. (Code d'activation : ${codeActivation})`,
+      codeActivation: !emailSent ? codeActivation : undefined,
       user: {
         idUtilisateur: newUser.idUtilisateur,
         nom: newUser.nom,
@@ -521,10 +538,11 @@ exports.updateUser = async (req, res) => {
     await user.update(updateData);
 
     const { enregistrerActivite } = require('../services/auditService');
+    const auteurModif = (req.user && (`${req.user.prenom || ''} ${req.user.nom || ''}`.trim() || req.user.email)) || 'Administrateur';
     await enregistrerActivite({
       idUtilisateur: user.idUtilisateur,
       action: 'MODIFICATION_PROFIL',
-      description: `Profil et compétences mis à jour par ${req.user ? (req.user.prenom || '') + ' ' + (req.user.nom || '') : 'Admin'}`.trim(),
+      description: `Profil et compétences mis à jour par ${auteurModif}`,
       typeEntite: 'USER',
       idEntite: user.idUtilisateur,
     });
@@ -701,10 +719,11 @@ exports.updateMe = async (req, res) => {
     await user.update(updateData);
 
     const { enregistrerActivite } = require('../services/auditService');
+    const auteurModif = (req.user && (`${req.user.prenom || ''} ${req.user.nom || ''}`.trim() || req.user.email)) || 'Administrateur';
     await enregistrerActivite({
       idUtilisateur: user.idUtilisateur,
       action: 'MODIFICATION_PROFIL',
-      description: `Profil et compétences mis à jour par ${req.user ? (req.user.prenom || '') + ' ' + (req.user.nom || '') : 'Admin'}`.trim(),
+      description: `Profil et compétences mis à jour par ${auteurModif}`,
       typeEntite: 'USER',
       idEntite: user.idUtilisateur,
     });

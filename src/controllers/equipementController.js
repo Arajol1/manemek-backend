@@ -54,6 +54,12 @@ exports.getAllEquipements = async (req, res) => {
   }
 };
 
+// 3. Récupérer la liste des catégories d'équipements prédéfinies
+exports.getCategories = async (req, res) => {
+  const categories = require('../constants/equipementCategories');
+  res.json(categories);
+};
+
 // 4. Récupérer un équipement par son ID
 exports.getEquipementById = async (req, res) => {
   console.info(`[equipementController.js] - getEquipementById : en cours...`);
