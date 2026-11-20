@@ -10,8 +10,8 @@ router.use(authenticateToken);
 router.get('/', missionController.getAllMissions);
 router.get('/:id', missionController.getMissionById);
 
-// Création et affectation (Admin et Responsable uniquement)
-router.post('/', authorizeRole('ADMIN'), missionController.createMission);
+// Création et affectation (Admin et Responsable)
+router.post('/', authorizeRole('ADMIN', 'RESPONSABLE'), missionController.createMission);
 router.post('/:missionId/affect', authorizeRole('ADMIN', 'RESPONSABLE'), missionController.affectUserToMission);
 router.delete('/:missionId/affect/:collaborateurId', authorizeRole('ADMIN', 'RESPONSABLE'), missionController.removeUserFromMission);
 

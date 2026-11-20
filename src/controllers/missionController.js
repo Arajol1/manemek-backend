@@ -4,7 +4,7 @@ const { Mission, User, Affectation, MouvementEquipement, CompteRendu, Incident }
 exports.createMission = async (req, res) => {
   console.info(`[missionController.js] - createMission : en cours...`);
   try {
-    const { titre, description, dateDebut, dateFin, statut, priorite, localisation } = req.body;
+    const { titre, description, dateDebut, dateFin, statut, priorite, localisation, equipements } = req.body;
 
     // Génération automatique du codeMission requis (ex: MIS-1710000000)
     const codeMission = `MIS-${Date.now()}`;
@@ -21,6 +21,27 @@ exports.createMission = async (req, res) => {
       responsableId: req.user.idUtilisateur,
     });
 
+    // Affectation directe des équipements choisis
+    const { Equipement } = require('../models');
+    if (Array.isArray(equipements) && equipements.length > 0) {
+      for (const item of equipements) {
+        if (!item.idEquipement) continue;
+        const eq = await Equipement.findByPk(item.idEquipement);
+        if (eq) {
+          const qte = Math.min(parseInt(item.quantite, 10) || 1, eq.quantite);
+          await MouvementEquipement.create({
+            idMission: mission.idMission,
+            idEquipement: eq.idEquipement,
+            idUtilisateur: req.user.idUtilisateur,
+            type: 'SORTIE',
+            etatAvant: eq.etat,
+            etatApres: eq.etat,
+            commentaire: `Affectation mission ${mission.titre} (${qte} unité(s))`
+          });
+        }
+      }
+    }
+
     res.status(201).json({
       message: 'Mission créée avec succès',
       mission,
@@ -34,6 +55,7 @@ exports.createMission = async (req, res) => {
 exports.getAllMissions = async (req, res) => {
   console.info(`[missionController.js] - getAllMissions : en cours...`);
   try {
+    const { Equipement } = require('../models');
     const missions = await Mission.findAll({
       include: [
         { model: User, as: 'responsable', attributes: ['idUtilisateur', 'nom', 'prenom', 'email', 'avatarUri'] },
@@ -42,7 +64,12 @@ exports.getAllMissions = async (req, res) => {
           as: 'affectations',
           include: [{ model: User, as: 'collaborateur', attributes: ['idUtilisateur', 'nom', 'prenom', 'role', 'avatarUri'] }]
         },
+        {
+          model: MouvementEquipement,
+          include: [{ model: Equipement }]
+        }
       ],
+      order: [['createdAt', 'DESC']]
     });
     res.json(missions);
   } catch (error) {
@@ -54,6 +81,7 @@ exports.getAllMissions = async (req, res) => {
 exports.getMissionById = async (req, res) => {
   console.info(`[missionController.js] - getMissionById : en cours...`);
   try {
+    const { Equipement } = require('../models');
     const mission = await Mission.findByPk(req.params.id, {
       include: [
         { model: User, as: 'responsable', attributes: ['idUtilisateur', 'nom', 'prenom', 'email', 'avatarUri'] },
@@ -68,6 +96,10 @@ exports.getMissionById = async (req, res) => {
             }
           ]
         },
+        {
+          model: MouvementEquipement,
+          include: [{ model: Equipement }]
+        }
       ],
     });
 

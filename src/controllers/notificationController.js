@@ -32,9 +32,13 @@ exports.marquerCommeLue = async (req, res) => {
     const notif = await Notification.findByPk(id);
     if (!notif) return res.status(404).json({ message: 'Notification introuvable.' });
 
-    notif.estLue = true;
+    if (req.body && typeof req.body.estLue === 'boolean') {
+      notif.estLue = req.body.estLue;
+    } else {
+      notif.estLue = !notif.estLue;
+    }
     await notif.save();
-    res.json({ message: 'Notification marquée comme lue.' });
+    res.json({ message: 'Statut de la notification mis à jour.', estLue: notif.estLue, notif });
   } catch (error) {
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }

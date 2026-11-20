@@ -194,19 +194,20 @@ exports.createUser = async (req, res) => {
       expirationCodeActivation
     });
 
-    let emailSent = false;
     try {
-      if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
-        await envoyerCodeActivation(
-          newUser,
-          codeActivation
-        );
-        emailSent = true;
-      } else {
-        console.warn(`[createUser] SMTP non configuré dans .env. Code d'activation pour ${newUser.email} : ${codeActivation}`);
-      }
+      await envoyerCodeActivation(
+        newUser,
+        codeActivation
+      );
     } catch (emailError) {
-      console.warn(`[createUser] Impossible d'envoyer l'email d'activation (${emailError.message}). Code : ${codeActivation}`);
+      await newUser.destroy();
+      console.error(
+        'Erreur envoi email :',
+        emailError
+      );
+      return res.status(500).json({
+        message: 'Utilisateur non créé : impossible d’envoyer l’email. Vérifiez vos identifiants EMAIL_USER et EMAIL_PASSWORD dans le fichier .env.'
+      });
     }
 
     try {
@@ -224,10 +225,7 @@ exports.createUser = async (req, res) => {
     }
 
     res.status(201).json({
-      message: emailSent
-        ? 'Utilisateur créé. Le code d’activation a été envoyé par email.'
-        : `Utilisateur créé avec succès. (Code d'activation : ${codeActivation})`,
-      codeActivation: !emailSent ? codeActivation : undefined,
+      message: 'Utilisateur créé. Le code d’activation a été envoyé par email.',
       user: {
         idUtilisateur: newUser.idUtilisateur,
         nom: newUser.nom,
