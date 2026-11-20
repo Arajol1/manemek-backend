@@ -12,6 +12,9 @@ router.get('/', notificationController.MesNotifications );
 // Marquer toutes les notifications comme lues
 router.put('/tout-lire', notificationController.toutMarquerCommeLue);
 
+// Déclencher une notification de test (Web Push / In-App)
+router.post('/test', notificationController.testerNotification);
+
 // Enregistrer le token Firebase Cloud Messaging (Web Push)
 router.post('/fcm-token', notificationController.enregistrerFcmToken);
 

@@ -80,3 +80,28 @@ exports.enregistrerFcmToken = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
+
+exports.testerNotification = async (req, res) => {
+  console.info(`[notificationController.js] - testerNotification : en cours...`);
+  try {
+    const idUtilisateur = req.user.idUtilisateur;
+    const now = new Date();
+    const heure = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    const notif = await Notification.create({
+      titre: `🚀 Test Notification Web Push`,
+      message: `Notification envoyée à ${heure} pour vérifier la réception en temps réel et l'affichage des alertes.`,
+      type: 'INFO',
+      estLue: false,
+      dateEnvoi: now,
+      idUtilisateur,
+    });
+
+    res.status(201).json({
+      message: 'Notification de test générée avec succès.',
+      notif,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};
