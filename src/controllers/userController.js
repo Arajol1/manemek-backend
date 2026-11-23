@@ -48,7 +48,7 @@ exports.login = async (req, res) => {
     // Bloquer les collaborateurs sur la plateforme web
     if (req.body.platform === 'web' && user.role === 'COLLABORATEUR') {
       return res.status(403).json({
-        message: "Accès refusé. La plateforme web est exclusivement réservée aux administrateurs et responsables. Veuillez utiliser l'application mobile."
+        message: "Accès refusé ! \n Veuillez utiliser l'application mobile."
       });
     }
 

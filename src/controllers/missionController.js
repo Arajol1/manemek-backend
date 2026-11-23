@@ -1,10 +1,10 @@
-const { Mission, User, Affectation, MouvementEquipement, CompteRendu, Incident } = require('../models');
+const { Mission, User, Affectation, MouvementEquipement, CompteRendu, Incident, Notification } = require('../models');
 
 // 1. Créer une mission (Admin ou Responsable)
 exports.createMission = async (req, res) => {
   console.info(`[missionController.js] - createMission : en cours...`);
   try {
-    const { titre, description, dateDebut, dateFin, statut, priorite, localisation, equipements } = req.body;
+    const { titre, description, dateDebut, dateFin, statut, priorite, localisation, equipements, collaborateurs } = req.body;
 
     // Génération automatique du codeMission requis (ex: MIS-1710000000)
     const codeMission = `MIS-${Date.now()}`;
@@ -20,6 +20,26 @@ exports.createMission = async (req, res) => {
       localisation,
       responsableId: req.user.idUtilisateur,
     });
+
+    // Affectation directe des collaborateurs choisis à la création
+    if (Array.isArray(collaborateurs) && collaborateurs.length > 0) {
+      for (const col of collaborateurs) {
+        const colId = typeof col === 'object' ? col.idUtilisateur : col;
+        if (!colId) continue;
+        await Affectation.create({
+          missionId: mission.idMission,
+          collaborateurId: colId,
+          fonction: (typeof col === 'object' && col.fonction) || 'MEMBRE',
+        });
+        await Notification.create({
+          titre: 'Nouvelle affectation de mission',
+          message: `Vous avez été affecté(e) à la mission "${mission.titre}". Localisation : ${mission.localisation || 'Non spécifiée'}.`,
+          type: 'MISSION',
+          idUtilisateur: colId,
+          estLue: false,
+        });
+      }
+    }
 
     // Affectation directe des équipements choisis
     const { Equipement } = require('../models');
@@ -148,6 +168,19 @@ exports.affectUserToMission = async (req, res) => {
       fonction: role || 'MEMBRE',
     });
 
+    // Création de la notification pour le collaborateur affecté
+    try {
+      await Notification.create({
+        titre: 'Nouvelle affectation de mission',
+        message: `Vous avez été affecté(e) à la mission "${mission.titre}" en tant que ${role || 'MEMBRE'}. Localisation : ${mission.localisation || 'Non spécifiée'}.`,
+        type: 'MISSION',
+        idUtilisateur: userId,
+        estLue: false,
+      });
+    } catch (notifErr) {
+      console.warn('[missionController] Erreur création notification affectation :', notifErr.message);
+    }
+
     res.status(201).json({
       message: 'Utilisateur affecté avec succès à la mission',
       affectation,
@@ -162,6 +195,8 @@ exports.removeUserFromMission = async (req, res) => {
   console.info(`[missionController.js] - removeUserFromMission : en cours...`);
   try {
     const { missionId, collaborateurId } = req.params;
+    const mission = await Mission.findByPk(missionId);
+
     const deleted = await Affectation.destroy({
       where: {
         missionId,
@@ -171,6 +206,21 @@ exports.removeUserFromMission = async (req, res) => {
 
     if (!deleted) {
       return res.status(404).json({ message: 'Affectation introuvable pour ce collaborateur.' });
+    }
+
+    // Création de la notification de retrait
+    if (mission) {
+      try {
+        await Notification.create({
+          titre: 'Retrait d\'une mission',
+          message: `Vous avez été retiré(e) de la mission "${mission.titre}".`,
+          type: 'MISSION',
+          idUtilisateur: collaborateurId,
+          estLue: false,
+        });
+      } catch (notifErr) {
+        console.warn('[missionController] Erreur création notification retrait :', notifErr.message);
+      }
     }
 
     res.json({ message: 'Collaborateur retiré de la mission avec succès.' });
