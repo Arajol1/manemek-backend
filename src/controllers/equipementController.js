@@ -104,6 +104,18 @@ exports.updateEquipement = async (req, res) => {
 
     await equipement.update(updateData);
 
+    // 🔔 Notification si équipement dégradé ou usé
+    if (etat && ['USE', 'ENDOMMAGE', 'HORS_SERVICE'].includes(etat)) {
+      const { Notification } = require('../models');
+      await Notification.create({
+        titre: 'Signalement équipement endommagé ou usé',
+        message: `L'équipement "${equipement.nom}" (${equipement.codeEquipement}) a été signalé à l'état "${etat}".`,
+        type: 'EQUIPEMENT',
+        idUtilisateur: null, // Accessible par les admins et responsables
+        estLue: false
+      });
+    }
+
     const { enregistrerActivite } = require('../services/auditService');
     await enregistrerActivite({
       idUtilisateur: req.user ? req.user.idUtilisateur : 1,
@@ -281,6 +293,18 @@ exports.reclasserEquipement = async (req, res) => {
       typeEntite: 'EQUIPEMENT',
       idEntite: equipement.idEquipement,
     });
+
+    // 🔔 Notification pour les Admins & Responsables logistique en cas d'usure ou dégradation
+    if (['USE', 'ENDOMMAGE', 'HORS_SERVICE'].includes(nouvelEtat)) {
+      const { Notification } = require('../models');
+      await Notification.create({
+        titre: 'Signalement équipement endommagé ou usé',
+        message: `${quantiteAReclasser} unité(s) de "${equipement.nom}" (${equipement.codeEquipement}) reclassée(s) comme ${nouvelEtat}.`,
+        type: 'EQUIPEMENT',
+        idUtilisateur: null,
+        estLue: false
+      });
+    }
 
     res.json({
       message: `Reclassification réussie : ${quantiteAReclasser} unité(s) passée(s) à l'état ${nouvelEtat}.`,

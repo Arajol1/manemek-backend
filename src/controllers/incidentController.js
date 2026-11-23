@@ -36,9 +36,12 @@ exports.creerIncident = async (req, res) => {
     });
 
     // 🔔 Notification automatique pour les responsables et admins
+    const isCritique = ['CRITIQUE', 'URGENT', 'ELEVE'].includes((niveauUrgence || '').toUpperCase());
     await Notification.create({
-      titre: 'Nouveau signalement d\'incident',
-      message: `Incident "${sujet}" signalé par un collaborateur.`,
+      titre: isCritique ? '🚨 Incident critique déclaré' : 'Nouveau signalement d\'incident',
+      message: isCritique
+        ? `ALERTE CRITIQUE : L'incident "${sujet}" (${categorie}) requiert une intervention immédiate !`
+        : `Incident "${sujet}" signalé par un collaborateur.`,
       type: 'INCIDENT',
       idUtilisateur: null // Accessible par les admins/responsables
     });
