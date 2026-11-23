@@ -596,14 +596,16 @@ exports.deleteUser = async (req, res) => {
 
     if (user.role === 'ADMIN') {
       const requester = await User.findByPk(req.user.idUtilisateur);
-      if (!requester || requester.niveauAcces !== 'SUPER_ADMIN') {
+      // Seul un SUPER_ADMIN peut supprimer un autre compte SUPER_ADMIN.
+      // Un ADMIN normal peut supprimer d'autres administrateurs, responsables ou collaborateurs.
+      if (user.niveauAcces === 'SUPER_ADMIN' && (!requester || requester.niveauAcces !== 'SUPER_ADMIN')) {
         return res.status(403).json({
-          message: 'Vous n\'avez pas l\'autorisation de supprimer un autre compte administrateur.'
+          message: 'Vous n\'avez pas l\'autorisation de supprimer le compte super-administrateur principal.'
         });
       }
     }
 
-    const { Mission, Affectation, Notification, MouvementEquipement, CompteRendu, MouvementPresence, Incident } = require('../models');
+    const { Mission, Affectation, Notification, MouvementEquipement, CompteRendu, MouvementPresence, Incident, HistoriqueActivite } = require('../models');
 
     // Empêcher la suppression s'il est responsable de missions
     const missions = await Mission.findAll({ where: { responsableId: id } });
@@ -620,6 +622,9 @@ exports.deleteUser = async (req, res) => {
     await CompteRendu.destroy({ where: { idUtilisateur: id } });
     await MouvementPresence.destroy({ where: { idUtilisateur: id } });
     await Incident.destroy({ where: { idUtilisateur: id } });
+    if (HistoriqueActivite) {
+      await HistoriqueActivite.destroy({ where: { idUtilisateur: id } });
+    }
 
     await user.destroy();
 
